@@ -18,10 +18,22 @@ public class VariantController {
 	private VariantService variantService;
 
 	@PostMapping(value = "/variant/save", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public String registration(@RequestBody VariantBean variantBean) {
+	public String saveVariant(@RequestBody VariantBean variantBean) {
 		String status = null;
 		try {
 			status = variantService.saveVariantDetails(variantBean);
+		} catch (Exception e) {
+			e.printStackTrace();
+			status = "0";
+		}
+		return status;
+	}
+
+	@PostMapping(value = "/variant/update", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public String updateVariant(@RequestBody VariantBean variantBean) {
+		String status = null;
+		try {
+			status = variantService.updateVariantDetails(variantBean);
 		} catch (Exception e) {
 			e.printStackTrace();
 			status = "0";

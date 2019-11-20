@@ -8,4 +8,6 @@ import com.reqres.angular.model.TbVariant;
 @Repository("tbVariantRepository")
 public interface TbVariantRepository extends JpaRepository<TbVariant, Long> {
 
+	public TbVariant findOneById(Long id);
+
 }

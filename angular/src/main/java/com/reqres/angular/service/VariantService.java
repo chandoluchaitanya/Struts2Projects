@@ -41,6 +41,18 @@ public class VariantService {
 		this.tbVariantColourRepository = tbVariantColourRepository;
 	}
 
+	public List<TbBrand> findAllBrands() {
+		return tbBrandRepository.findAll();
+	}
+
+	public List<TbSeries> findAllSeries() {
+		return tbSeriesRepository.findAll();
+	}
+
+	public List<TbColour> findAllColours() {
+		return tbColourRepository.findAll();
+	}
+
 	@Transactional
 	public String saveVariantDetails(VariantBean variantBean) throws Exception {
 		TbVariant variant = new TbVariant();
@@ -48,6 +60,21 @@ public class VariantService {
 		List<TbVariantColour> variantColours = setTbVariantColours(variantBean, variant);
 		// save to repo
 		tbVariantRepository.save(variant);
+		tbVariantColourRepository.saveAll(variantColours);
+		return "1";
+	}
+
+	@Transactional
+	public String updateVariantDetails(VariantBean variantBean) {
+		TbVariant variant = tbVariantRepository.findOneById(Long.parseLong(variantBean.getId()));
+		variant = setVariantDetails(variantBean, variant);
+		List<TbVariantColour> oldVariantColours = tbVariantColourRepository
+				.findByVariantId(Long.parseLong(variantBean.getId()));
+		// set up new variant colours
+		List<TbVariantColour> variantColours = setTbVariantColours(variantBean, variant);
+		// save to repo
+		tbVariantRepository.save(variant);
+		tbVariantColourRepository.deleteAll(oldVariantColours);
 		tbVariantColourRepository.saveAll(variantColours);
 		return "1";
 	}
