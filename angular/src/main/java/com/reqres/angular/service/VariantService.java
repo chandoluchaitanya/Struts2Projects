@@ -2,6 +2,7 @@ package com.reqres.angular.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import org.springframework.util.CollectionUtils;
 import com.reqres.angular.bean.Colour;
 import com.reqres.angular.bean.PaginationUtilDTO;
 import com.reqres.angular.bean.VariantBean;
+import com.reqres.angular.bean.VariantBeanForView;
 import com.reqres.angular.model.TbBrand;
 import com.reqres.angular.model.TbColour;
 import com.reqres.angular.model.TbConfigStatus;
@@ -19,6 +21,7 @@ import com.reqres.angular.model.TbVariant;
 import com.reqres.angular.model.TbVariantColour;
 import com.reqres.angular.repo.TbBrandRepository;
 import com.reqres.angular.repo.TbColourRepository;
+import com.reqres.angular.repo.TbConfigStatusRepository;
 import com.reqres.angular.repo.TbSeriesRepository;
 import com.reqres.angular.repo.TbVariantColourRepository;
 import com.reqres.angular.repo.TbVariantRepository;
@@ -33,17 +36,20 @@ public class VariantService {
 	private TbVariantRepository tbVariantRepository;
 	private TbVariantColourRepository tbVariantColourRepository;
 	private VariantSearchDao variantSearchDao;
+	private TbConfigStatusRepository tbConfigStatusRepository;
 
 	@Autowired
 	public VariantService(TbBrandRepository tbBrandRepository, TbSeriesRepository tbSeriesRepository,
 			TbColourRepository tbColourRepository, TbVariantRepository tbVariantRepository,
-			TbVariantColourRepository tbVariantColourRepository, VariantSearchDao variantSearchDao) {
+			TbVariantColourRepository tbVariantColourRepository, VariantSearchDao variantSearchDao,
+			TbConfigStatusRepository tbConfigStatusRepository) {
 		this.tbBrandRepository = tbBrandRepository;
 		this.tbSeriesRepository = tbSeriesRepository;
 		this.tbColourRepository = tbColourRepository;
 		this.tbVariantRepository = tbVariantRepository;
 		this.tbVariantColourRepository = tbVariantColourRepository;
 		this.variantSearchDao = variantSearchDao;
+		this.tbConfigStatusRepository = tbConfigStatusRepository;
 	}
 
 	public List<TbBrand> findAllBrands() {
@@ -56,6 +62,10 @@ public class VariantService {
 
 	public List<TbColour> findAllColours() {
 		return tbColourRepository.findAll();
+	}
+
+	public List<TbConfigStatus> findAllStatuses() {
+		return tbConfigStatusRepository.findAll();
 	}
 
 	/**
@@ -173,5 +183,55 @@ public class VariantService {
 
 	public Long countVariantDetails(VariantBean variantBean) {
 		return variantSearchDao.countVariantDetails(variantBean);
+	}
+
+	public VariantBeanForView getVariantDetails(String id) {
+		TbVariant variant = tbVariantRepository.findOneById(Long.parseLong(id));
+		List<TbBrand> brands = findAllBrands();
+		List<TbSeries> series = findAllSeries();
+		List<TbConfigStatus> statuses = findAllStatuses();
+		// set details to bean
+		VariantBeanForView vb = new VariantBeanForView();
+		vb.setId(variant.getId().toString());
+		vb.setVariantCode(variant.getVariantCode());
+		vb.setVariantName(variant.getVariantName());
+		vb.setVariantDescription(variant.getVariantDescription());
+		vb.setBrandId(variant.getBrandId().getId().toString());
+		vb.setBrands(brands);
+		vb.setSeriesId(variant.getSeriesId().getId().toString());
+		vb.setSerieses(series);
+		vb.setLenOfChassisNo(variant.getLenOfChassisNo());
+		vb.setLenOfEngineNo(variant.getLenOfEngineNo());
+		vb.setPrefixChassisNo(variant.getPrefixChassisNo());
+		vb.setPrefixEngineNo(variant.getPrefixEngineNo());
+		vb.setPublishToOrder(variant.getPublishToOrder());
+		vb.setStatusId(variant.getTbConfigStatus().getStatusId().toString());
+		vb.setStatuses(statuses);
+		// set colour details -->START
+		List<Colour> colours = new ArrayList<Colour>();
+		List<TbVariantColour> variantColoursList = tbVariantColourRepository.findByVariantId(Long.parseLong(id));
+		if (!CollectionUtils.isEmpty(variantColoursList)) {
+			for (TbVariantColour vc : variantColoursList) {
+				Colour c = new Colour();
+				c.setId(vc.getTbColour().getId().toString());
+				c.setName(vc.getTbColour().getColourName());
+				c.setChecked(true);
+				colours.add(c);
+			}
+			List<Long> colourIds = variantColoursList.stream().map(e -> e.getId()).collect(Collectors.toList());
+			List<TbColour> coloursList = tbColourRepository.findColoursOtherThanVariantColoursIds(colourIds);
+			if (!CollectionUtils.isEmpty(coloursList)) {
+				for (TbColour c : coloursList) {
+					Colour cc = new Colour();
+					cc.setId(c.getId().toString());
+					cc.setName(c.getColourName());
+					cc.setChecked(false);
+					colours.add(cc);
+				}
+			}
+		}
+		vb.setColours(colours);
+		// set colour details -->END
+		return vb;
 	}
 }
