@@ -6,8 +6,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import com.reqres.angular.bean.Colour;
+import com.reqres.angular.bean.PaginationUtilDTO;
 import com.reqres.angular.bean.VariantBean;
 import com.reqres.angular.model.TbBrand;
 import com.reqres.angular.model.TbColour;
@@ -20,6 +22,7 @@ import com.reqres.angular.repo.TbColourRepository;
 import com.reqres.angular.repo.TbSeriesRepository;
 import com.reqres.angular.repo.TbVariantColourRepository;
 import com.reqres.angular.repo.TbVariantRepository;
+import com.reqres.angular.repo.VariantSearchDao;
 
 @Service("variantService")
 public class VariantService {
@@ -29,16 +32,18 @@ public class VariantService {
 	private TbColourRepository tbColourRepository;
 	private TbVariantRepository tbVariantRepository;
 	private TbVariantColourRepository tbVariantColourRepository;
+	private VariantSearchDao variantSearchDao;
 
 	@Autowired
 	public VariantService(TbBrandRepository tbBrandRepository, TbSeriesRepository tbSeriesRepository,
 			TbColourRepository tbColourRepository, TbVariantRepository tbVariantRepository,
-			TbVariantColourRepository tbVariantColourRepository) {
+			TbVariantColourRepository tbVariantColourRepository, VariantSearchDao variantSearchDao) {
 		this.tbBrandRepository = tbBrandRepository;
 		this.tbSeriesRepository = tbSeriesRepository;
 		this.tbColourRepository = tbColourRepository;
 		this.tbVariantRepository = tbVariantRepository;
 		this.tbVariantColourRepository = tbVariantColourRepository;
+		this.variantSearchDao = variantSearchDao;
 	}
 
 	public List<TbBrand> findAllBrands() {
@@ -53,6 +58,13 @@ public class VariantService {
 		return tbColourRepository.findAll();
 	}
 
+	/**
+	 * Save Variant
+	 * 
+	 * @param variantBean
+	 * @return
+	 * @throws Exception
+	 */
 	@Transactional
 	public String saveVariantDetails(VariantBean variantBean) throws Exception {
 		TbVariant variant = new TbVariant();
@@ -64,8 +76,15 @@ public class VariantService {
 		return "1";
 	}
 
+	/**
+	 * update Variant Details
+	 * 
+	 * @param variantBean
+	 * @return
+	 * @throws Exception
+	 */
 	@Transactional
-	public String updateVariantDetails(VariantBean variantBean) {
+	public String updateVariantDetails(VariantBean variantBean) throws Exception {
 		TbVariant variant = tbVariantRepository.findOneById(Long.parseLong(variantBean.getId()));
 		variant = setVariantDetails(variantBean, variant);
 		List<TbVariantColour> oldVariantColours = tbVariantColourRepository
@@ -120,5 +139,39 @@ public class VariantService {
 			}
 		}
 		return variantColours;
+	}
+
+	public PaginationUtilDTO getVariantDetails(VariantBean variantBean) {
+		Integer start = (variantBean.getPageNumber() - 1) * 5;
+		Integer maxResults = 5;
+		List<TbVariant> tbVariantsList = searchVariantDetails(variantBean, start, maxResults);
+		Integer count = countVariantDetails(variantBean).intValue();
+		// set user details
+		List<VariantBean> list = new ArrayList<VariantBean>();
+		if (!CollectionUtils.isEmpty(tbVariantsList)) {
+			for (TbVariant v : tbVariantsList) {
+				VariantBean bean = new VariantBean();
+				bean.setId(v.getId().toString());
+				bean.setVariantName(v.getVariantName());
+				bean.setVariantCode(v.getVariantCode());
+				bean.setStatusName(v.getTbConfigStatus().getStatusDisplay());
+				bean.setVariantDescription(v.getVariantDescription());
+				list.add(bean);
+			}
+		}
+		PaginationUtilDTO dto = new PaginationUtilDTO();
+		// set to dto
+		dto.setData(list);
+		dto.setCount(count);
+		return dto;
+	}
+
+	public List<TbVariant> searchVariantDetails(VariantBean variantBean, Integer start, Integer maxResults) {
+		List<TbVariant> variants = variantSearchDao.searchVariantDetails(variantBean, start, maxResults);
+		return variants;
+	}
+
+	public Long countVariantDetails(VariantBean variantBean) {
+		return variantSearchDao.countVariantDetails(variantBean);
 	}
 }

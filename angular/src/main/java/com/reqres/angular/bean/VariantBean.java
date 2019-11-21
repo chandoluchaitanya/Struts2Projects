@@ -13,7 +13,9 @@ public class VariantBean {
 	private String prefixChassisNo;
 	private String prefixEngineNo;
 	private String statusId;
+	private String statusName;
 	private Colour[] colours;
+	private Integer pageNumber;
 
 	public String getId() {
 		return id;
@@ -117,5 +119,21 @@ public class VariantBean {
 
 	public void setStatusId(String statusId) {
 		this.statusId = statusId;
+	}
+
+	public Integer getPageNumber() {
+		return pageNumber;
+	}
+
+	public void setPageNumber(Integer pageNumber) {
+		this.pageNumber = pageNumber;
+	}
+
+	public String getStatusName() {
+		return statusName;
+	}
+
+	public void setStatusName(String statusName) {
+		this.statusName = statusName;
 	}
 }
