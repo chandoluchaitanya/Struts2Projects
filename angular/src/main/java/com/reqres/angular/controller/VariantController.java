@@ -1,5 +1,7 @@
 package com.reqres.angular.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,7 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reqres.angular.bean.PaginationUtilDTO;
 import com.reqres.angular.bean.VariantBean;
+import com.reqres.angular.bean.VariantBeanForAdd;
 import com.reqres.angular.bean.VariantBeanForView;
+import com.reqres.angular.model.TbSeries;
 import com.reqres.angular.service.VariantService;
 
 @CrossOrigin(origins = "*")
@@ -67,6 +71,36 @@ public class VariantController {
 			if (vb != null) {
 				ObjectMapper mapper = new ObjectMapper();
 				response = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(vb);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	@GetMapping(value = "/getSeriesDetailsByBrandId/{id}")
+	public String getSeriesDetailsByBrandId(@PathVariable("id") String id) {
+		String response = "";
+		try {
+			List<TbSeries> series = variantService.getSeriesDetailsByBrandId(id);
+			if (series != null) {
+				ObjectMapper mapper = new ObjectMapper();
+				response = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(series);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	@PostMapping(value = "/variant/add", produces = MediaType.APPLICATION_JSON_VALUE)
+	public String addNewVariant() {
+		String response = "";
+		try {
+			VariantBeanForAdd va = variantService.addNewVariantDetails();
+			if (va != null) {
+				ObjectMapper mapper = new ObjectMapper();
+				response = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(va);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

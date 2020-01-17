@@ -12,6 +12,7 @@ import org.springframework.util.CollectionUtils;
 import com.reqres.angular.bean.Colour;
 import com.reqres.angular.bean.PaginationUtilDTO;
 import com.reqres.angular.bean.VariantBean;
+import com.reqres.angular.bean.VariantBeanForAdd;
 import com.reqres.angular.bean.VariantBeanForView;
 import com.reqres.angular.model.TbBrand;
 import com.reqres.angular.model.TbColour;
@@ -233,5 +234,21 @@ public class VariantService {
 		vb.setColours(colours);
 		// set colour details -->END
 		return vb;
+	}
+
+	public List<TbSeries> getSeriesDetailsByBrandId(String id) {
+		List<TbSeries> seriesList = tbSeriesRepository.getSeriesDetailsByBrandId(Long.parseLong(id));
+		return seriesList;
+	}
+
+	public VariantBeanForAdd addNewVariantDetails() {
+		List<TbBrand> brands = findAllBrands();
+		List<TbColour> coloursList = findAllColours();
+		// set Basic details -->START
+		VariantBeanForAdd va = new VariantBeanForAdd();
+		va.setColours(coloursList);
+		va.setBrands(brands);
+		// set Basic details -->END
+		return va;
 	}
 }
