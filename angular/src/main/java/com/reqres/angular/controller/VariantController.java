@@ -93,7 +93,7 @@ public class VariantController {
 		return response;
 	}
 
-	@PostMapping(value = "/variant/add", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/variant/add", produces = MediaType.APPLICATION_JSON_VALUE)
 	public String addNewVariant() {
 		String response = "";
 		try {

@@ -215,7 +215,7 @@ public class VariantService {
 			for (TbVariantColour vc : variantColoursList) {
 				Colour c = new Colour();
 				c.setId(vc.getTbColour().getId().toString());
-				c.setName(vc.getTbColour().getColourName());
+				c.setColourName(vc.getTbColour().getColourName());
 				c.setChecked(true);
 				colours.add(c);
 			}
@@ -225,7 +225,7 @@ public class VariantService {
 				for (TbColour c : coloursList) {
 					Colour cc = new Colour();
 					cc.setId(c.getId().toString());
-					cc.setName(c.getColourName());
+					cc.setColourName(c.getColourName());
 					cc.setChecked(false);
 					colours.add(cc);
 				}
