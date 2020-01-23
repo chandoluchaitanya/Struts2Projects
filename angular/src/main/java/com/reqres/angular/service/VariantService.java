@@ -122,13 +122,13 @@ public class VariantService {
 		tbSeries.setId(Long.parseLong(variantBean.getSeriesId()));
 		variant.setSeriesId(tbSeries);
 
-		variant.setLenOfChassisNo(variant.getLenOfChassisNo());
+		variant.setLenOfChassisNo(variantBean.getLenOfChassisNo());
 		variant.setLenOfEngineNo(variantBean.getLenOfEngineNo());
 
 		variant.setPrefixChassisNo(variantBean.getPrefixChassisNo());
 		variant.setPrefixEngineNo(variantBean.getPrefixEngineNo());
 
-		variant.setPublishToOrder(variant.getPublishToOrder());
+		variant.setPublishToOrder(Boolean.valueOf(variantBean.getPublishToOrder()));
 
 		TbConfigStatus tbConfigStatus = new TbConfigStatus();
 		tbConfigStatus.setStatusId(Long.parseLong(variantBean.getStatusId()));
@@ -215,8 +215,7 @@ public class VariantService {
 			for (TbVariantColour vc : variantColoursList) {
 				Colour c = new Colour();
 				c.setId(vc.getTbColour().getId().toString());
-				c.setName(vc.getTbColour().getColourName());
-				c.setChecked(true);
+				c.setColourName(vc.getTbColour().getColourName());
 				colours.add(c);
 			}
 			List<Long> colourIds = variantColoursList.stream().map(e -> e.getId()).collect(Collectors.toList());
@@ -225,8 +224,7 @@ public class VariantService {
 				for (TbColour c : coloursList) {
 					Colour cc = new Colour();
 					cc.setId(c.getId().toString());
-					cc.setName(c.getColourName());
-					cc.setChecked(false);
+					cc.setColourName(c.getColourName());
 					colours.add(cc);
 				}
 			}
@@ -242,12 +240,14 @@ public class VariantService {
 	}
 
 	public VariantBeanForAdd addNewVariantDetails() {
-		List<TbBrand> brands = findAllBrands();
+		List<TbBrand> brandList = findAllBrands();
 		List<TbColour> coloursList = findAllColours();
+		List<TbConfigStatus> statusList = findAllStatuses();
 		// set Basic details -->START
 		VariantBeanForAdd va = new VariantBeanForAdd();
 		va.setColours(coloursList);
-		va.setBrands(brands);
+		va.setBrands(brandList);
+		va.setStatuses(statusList);
 		// set Basic details -->END
 		return va;
 	}

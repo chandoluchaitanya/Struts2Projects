@@ -3,8 +3,7 @@ package com.reqres.angular.bean;
 public class Colour {
 
 	private String id;
-	private String name;
-	private Boolean checked;
+	private String colourName;
 
 	public String getId() {
 		return id;
@@ -14,19 +13,11 @@ public class Colour {
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public String getColourName() {
+		return colourName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public Boolean getChecked() {
-		return checked;
-	}
-
-	public void setChecked(Boolean checked) {
-		this.checked = checked;
+	public void setColourName(String colourName) {
+		this.colourName = colourName;
 	}
 }
