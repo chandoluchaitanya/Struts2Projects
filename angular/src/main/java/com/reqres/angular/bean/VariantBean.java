@@ -16,6 +16,8 @@ public class VariantBean {
 	private String statusName;
 	private Colour[] colours;
 	private Integer pageNumber;
+	private String brandName;
+	private String seriesName;
 
 	public String getId() {
 		return id;
@@ -135,5 +137,21 @@ public class VariantBean {
 
 	public void setStatusName(String statusName) {
 		this.statusName = statusName;
+	}
+
+	public String getBrandName() {
+		return brandName;
+	}
+
+	public void setBrandName(String brandName) {
+		this.brandName = brandName;
+	}
+
+	public String getSeriesName() {
+		return seriesName;
+	}
+
+	public void setSeriesName(String seriesName) {
+		this.seriesName = seriesName;
 	}
 }
