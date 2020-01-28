@@ -2,7 +2,6 @@ package com.reqres.angular.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -190,26 +189,24 @@ public class VariantService {
 
 	public VariantBeanForView getVariantDetails(String id) {
 		TbVariant variant = tbVariantRepository.findOneById(Long.parseLong(id));
-		List<TbBrand> brands = findAllBrands();
-		List<TbSeries> series = findAllSeries();
-		List<TbConfigStatus> statuses = findAllStatuses();
+		List<TbBrand> brandsList = findAllBrands();
+		List<TbSeries> seriesList = findAllSeries();
+		List<TbConfigStatus> statusList = findAllStatuses();
+		List<TbColour> coloursList = findAllColours();
 		// set details to bean
-		VariantBeanForView vb = new VariantBeanForView();
+		VariantBean vb = new VariantBean();
 		vb.setId(variant.getId().toString());
 		vb.setVariantCode(variant.getVariantCode());
 		vb.setVariantName(variant.getVariantName());
 		vb.setVariantDescription(variant.getVariantDescription());
 		vb.setBrandId(variant.getBrandId().getId().toString());
-		vb.setBrands(brands);
 		vb.setSeriesId(variant.getSeriesId().getId().toString());
-		vb.setSerieses(series);
 		vb.setLenOfChassisNo(variant.getLenOfChassisNo());
 		vb.setLenOfEngineNo(variant.getLenOfEngineNo());
 		vb.setPrefixChassisNo(variant.getPrefixChassisNo());
 		vb.setPrefixEngineNo(variant.getPrefixEngineNo());
-		vb.setPublishToOrder(variant.getPublishToOrder());
+		vb.setPublishToOrder(variant.getPublishToOrder() == null ? "0" : "1");
 		vb.setStatusId(variant.getTbConfigStatus().getStatusId().toString());
-		vb.setStatuses(statuses);
 		// set colour details -->START
 		List<Colour> colours = new ArrayList<Colour>();
 		List<TbVariantColour> variantColoursList = tbVariantColourRepository.findByVariantId(Long.parseLong(id));
@@ -220,20 +217,25 @@ public class VariantService {
 				c.setColourName(vc.getTbColour().getColourName());
 				colours.add(c);
 			}
-			List<Long> colourIds = variantColoursList.stream().map(e -> e.getId()).collect(Collectors.toList());
-			List<TbColour> coloursList = tbColourRepository.findColoursOtherThanVariantColoursIds(colourIds);
-			if (!CollectionUtils.isEmpty(coloursList)) {
-				for (TbColour c : coloursList) {
-					Colour cc = new Colour();
-					cc.setId(c.getId().toString());
-					cc.setColourName(c.getColourName());
-					colours.add(cc);
-				}
-			}
+			/*
+			 * List<Long> colourIds = variantColoursList.stream().map(e ->
+			 * e.getId()).collect(Collectors.toList()); List<TbColour> coloursList =
+			 * tbColourRepository.findColoursOtherThanVariantColoursIds(colourIds); if
+			 * (!CollectionUtils.isEmpty(coloursList)) { for (TbColour c : coloursList) {
+			 * Colour cc = new Colour(); cc.setId(c.getId().toString());
+			 * cc.setColourName(c.getColourName()); colours.add(cc); } }
+			 */
 		}
-		vb.setColours(colours);
+		vb.setColours(colours.stream().toArray(Colour[]::new));
 		// set colour details -->END
-		return vb;
+		// Add All objec to class
+		VariantBeanForView vbv = new VariantBeanForView();
+		vbv.setBean(vb);
+		vbv.setBrands(brandsList);
+		vbv.setStatuses(statusList);
+		vbv.setColours(coloursList);
+		vbv.setSerieses(seriesList);
+		return vbv;
 	}
 
 	public List<TbSeries> getSeriesDetailsByBrandId(String id) {
