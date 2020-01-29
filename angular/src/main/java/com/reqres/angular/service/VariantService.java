@@ -165,7 +165,6 @@ public class VariantService {
 				bean.setVariantName(v.getVariantName());
 				bean.setVariantCode(v.getVariantCode());
 				bean.setStatusName(v.getTbConfigStatus().getStatusDisplay());
-				// bean.setVariantDescription(v.getVariantDescription());
 				bean.setBrandName(v.getBrandId().getBrandName());
 				bean.setSeriesName(v.getSeriesId().getSeriesName());
 				list.add(bean);

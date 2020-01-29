@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.reqres.angular.bean.VariantBean;
-import com.reqres.angular.model.TbUser;
 import com.reqres.angular.model.TbVariant;
 
 @Repository("variantSearchDao")
@@ -52,7 +51,7 @@ public class VariantSearchDao {
 		Long totalResult = 0L;
 		try {
 			Session session = entityManager.unwrap(Session.class);
-			Criteria criteria = session.createCriteria(TbUser.class);
+			Criteria criteria = session.createCriteria(TbVariant.class);
 			criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
 			// search with variantCode
 			if (!StringUtils.isEmpty(variantBean.getVariantCode())) {

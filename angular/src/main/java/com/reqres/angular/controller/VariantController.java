@@ -51,7 +51,7 @@ public class VariantController {
 	}
 
 	@PostMapping(value = "/searchVariantDetails", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public String searchUserDetails(@RequestBody VariantBean variantBean) {
+	public String searchVariantDetails(@RequestBody VariantBean variantBean) {
 		String response = null;
 		try {
 			PaginationUtilDTO dto = variantService.getVariantDetails(variantBean);

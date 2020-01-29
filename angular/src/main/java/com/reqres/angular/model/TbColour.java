@@ -22,6 +22,9 @@ public class TbColour {
 	@Column(name = "colourName", length = 50, nullable = false)
 	private String colourName;
 
+	@Column(name = "colourCode", length = 50, nullable = false)
+	private String colourCode;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "paintTypeId", nullable = false)
 	private TbPaintType tbPaintType;
@@ -62,4 +65,11 @@ public class TbColour {
 		this.tbConfigStatus = tbConfigStatus;
 	}
 
+	public String getColourCode() {
+		return colourCode;
+	}
+
+	public void setColourCode(String colourCode) {
+		this.colourCode = colourCode;
+	}
 }
