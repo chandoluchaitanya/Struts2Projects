@@ -14,4 +14,6 @@ public interface TbColourRepository extends JpaRepository<TbColour, Long> {
 
 	@Query("from TbColour c where c.id not in (:ids)")
 	public List<TbColour> findColoursOtherThanVariantColoursIds(@Param("ids") List<Long> ids);
+
+	public TbColour findOneById(Long id);
 }
