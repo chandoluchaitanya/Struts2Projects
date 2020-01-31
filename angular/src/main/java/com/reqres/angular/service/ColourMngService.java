@@ -101,6 +101,14 @@ public class ColourMngService {
 		return "1";
 	}
 
+	public String updateColourDetails(ColourMngBean colourMngBean) {
+		TbColour tbColour = tbColourRepository.findOneById(Long.parseLong(colourMngBean.getId()));
+		tbColour = setColourDetails(tbColour, colourMngBean);
+		// update to repo
+		tbColourRepository.save(tbColour);
+		return "1";
+	}
+
 	private TbColour setColourDetails(TbColour tbColour, ColourMngBean colourMngBean) {
 		tbColour.setColourCode(colourMngBean.getColourCode());
 		tbColour.setColourName(colourMngBean.getColourName());
@@ -119,6 +127,7 @@ public class ColourMngService {
 		List<TbPaintType> paintTypeList = findAllPaintTypes();
 		// set details to bean
 		ColourMngBean bean = new ColourMngBean();
+		bean.setId(colour.getId().toString());
 		bean.setColourCode(colour.getColourCode());
 		bean.setColourName(colour.getColourName());
 		bean.setPaintType(colour.getTbPaintType().getId().toString());

@@ -62,6 +62,18 @@ public class ColourMngController {
 		}
 		return status;
 	}
+	
+	@PostMapping(value = "/colour/update", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public String updateColourDetails(@RequestBody ColourMngBean colourMngBean) {
+		String status = null;
+		try {
+			status = colourMngService.updateColourDetails(colourMngBean);
+		} catch (Exception e) {
+			e.printStackTrace();
+			status = "0";
+		}
+		return status;
+	}
 
 	@GetMapping(value = "/getColourDetailsById/{id}")
 	public String getColourDetails(@PathVariable("id") String id) {
