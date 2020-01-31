@@ -25,7 +25,7 @@ public class TbColour {
 	@Column(name = "colourCode", length = 50, nullable = false)
 	private String colourCode;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "paintTypeId", nullable = false)
 	private TbPaintType tbPaintType;
 

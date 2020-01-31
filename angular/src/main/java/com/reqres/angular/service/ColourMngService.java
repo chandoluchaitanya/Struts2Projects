@@ -9,6 +9,7 @@ import org.springframework.util.CollectionUtils;
 
 import com.reqres.angular.bean.ColourBeanForAdd;
 import com.reqres.angular.bean.ColourMngBean;
+import com.reqres.angular.bean.ColourMngBeanForView;
 import com.reqres.angular.bean.PaginationUtilDTO;
 import com.reqres.angular.model.TbColour;
 import com.reqres.angular.model.TbConfigStatus;
@@ -58,6 +59,7 @@ public class ColourMngService {
 			for (TbColour c : tbColoursList) {
 				ColourMngBean bean = new ColourMngBean();
 				bean.setId(c.getId().toString());
+				bean.setColourCode(c.getColourCode());
 				bean.setColourName(c.getColourName());
 				bean.setStatusName(c.getTbConfigStatus().getStatusDisplay());
 				bean.setPaintTypeName(c.getTbPaintType().getPaintTypeName());
@@ -99,6 +101,14 @@ public class ColourMngService {
 		return "1";
 	}
 
+	public String updateColourDetails(ColourMngBean colourMngBean) {
+		TbColour tbColour = tbColourRepository.findOneById(Long.parseLong(colourMngBean.getId()));
+		tbColour = setColourDetails(tbColour, colourMngBean);
+		// update to repo
+		tbColourRepository.save(tbColour);
+		return "1";
+	}
+
 	private TbColour setColourDetails(TbColour tbColour, ColourMngBean colourMngBean) {
 		tbColour.setColourCode(colourMngBean.getColourCode());
 		tbColour.setColourName(colourMngBean.getColourName());
@@ -109,5 +119,24 @@ public class ColourMngService {
 		paintType.setId(Integer.parseInt(colourMngBean.getPaintType()));
 		tbColour.setTbPaintType(paintType);
 		return tbColour;
+	}
+
+	public ColourMngBeanForView getColourDetails(String id) {
+		TbColour colour = tbColourRepository.findOneById(Long.parseLong(id));
+		List<TbConfigStatus> statusList = findAllStatuses();
+		List<TbPaintType> paintTypeList = findAllPaintTypes();
+		// set details to bean
+		ColourMngBean bean = new ColourMngBean();
+		bean.setId(colour.getId().toString());
+		bean.setColourCode(colour.getColourCode());
+		bean.setColourName(colour.getColourName());
+		bean.setPaintType(colour.getTbPaintType().getId().toString());
+		bean.setStatus(colour.getTbConfigStatus().getStatusId().toString());
+		// Add to bean
+		ColourMngBeanForView cmb = new ColourMngBeanForView();
+		cmb.setBean(bean);
+		cmb.setPaintTypes(paintTypeList);
+		cmb.setStatuses(statusList);
+		return cmb;
 	}
 }

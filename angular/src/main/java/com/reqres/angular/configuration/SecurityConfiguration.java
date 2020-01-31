@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -37,11 +36,18 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().antMatchers("/").permitAll().antMatchers("/login").permitAll().antMatchers("/admin/**")
-				.authenticated().and().csrf().disable().formLogin().loginPage("/login").failureUrl("/login?error=true")
-				.defaultSuccessUrl("/admin/home").usernameParameter("email").passwordParameter("password").and()
-				.logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/login").and()
-				.exceptionHandling().accessDeniedPage("/access-denied");
+		/*
+		 * http.authorizeRequests().antMatchers("/").permitAll().antMatchers("/login").
+		 * permitAll().antMatchers("/admin/**")
+		 * .authenticated().and().csrf().disable().formLogin().loginPage("/login").
+		 * failureUrl("/login?error=true")
+		 * .defaultSuccessUrl("/admin/home").usernameParameter("email").
+		 * passwordParameter("password").and() .logout().logoutRequestMatcher(new
+		 * AntPathRequestMatcher("/logout")).logoutSuccessUrl("/login").and()
+		 * .exceptionHandling().accessDeniedPage("/access-denied");
+		 */
+		http.csrf().disable().authorizeRequests().antMatchers("/").permitAll().antMatchers("/login").permitAll()
+				.anyRequest().authenticated().and().httpBasic();
 	}
 
 	@Override

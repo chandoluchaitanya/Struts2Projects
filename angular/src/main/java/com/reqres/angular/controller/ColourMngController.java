@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reqres.angular.bean.ColourBeanForAdd;
 import com.reqres.angular.bean.ColourMngBean;
+import com.reqres.angular.bean.ColourMngBeanForView;
 import com.reqres.angular.bean.PaginationUtilDTO;
 import com.reqres.angular.service.ColourMngService;
 
@@ -59,5 +61,32 @@ public class ColourMngController {
 			status = "0";
 		}
 		return status;
+	}
+	
+	@PostMapping(value = "/colour/update", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public String updateColourDetails(@RequestBody ColourMngBean colourMngBean) {
+		String status = null;
+		try {
+			status = colourMngService.updateColourDetails(colourMngBean);
+		} catch (Exception e) {
+			e.printStackTrace();
+			status = "0";
+		}
+		return status;
+	}
+
+	@GetMapping(value = "/getColourDetailsById/{id}")
+	public String getColourDetails(@PathVariable("id") String id) {
+		String response = "";
+		try {
+			ColourMngBeanForView cmb = colourMngService.getColourDetails(id);
+			if (cmb != null) {
+				ObjectMapper mapper = new ObjectMapper();
+				response = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(cmb);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response;
 	}
 }
