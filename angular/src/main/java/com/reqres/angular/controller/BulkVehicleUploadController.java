@@ -18,7 +18,7 @@ public class BulkVehicleUploadController {
 	@Autowired
 	private BulkVehicleUploadService bulkVehicleUploadService;
 
-	@PostMapping("/uploadFile")
+	@PostMapping(value = "/uploadFile")
 	public String uploadFile(@RequestParam("file") MultipartFile file) {
 		String response = "";
 		try {
