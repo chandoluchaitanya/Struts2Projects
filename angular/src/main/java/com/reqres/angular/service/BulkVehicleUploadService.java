@@ -35,6 +35,9 @@ public class BulkVehicleUploadService {
 	private TbVehicleRepository tbVehicleRepository;
 	private TbVehicleTypeRepository tbVehicleTypeRepository;
 
+	// Constants
+	private static final Integer TOTAL_NO_OF_COLOUMNS = 15;
+
 	@Autowired
 	public BulkVehicleUploadService(TbBrandRepository tbBrandRepository, TbSeriesRepository tbSeriesRepository,
 			TbVariantRepository tbVariantRepository, TbColourRepository tbColourRepository,
@@ -50,26 +53,34 @@ public class BulkVehicleUploadService {
 		this.tbVehicleTypeRepository = tbVehicleTypeRepository;
 	}
 
-	public String uploadFile(MultipartFile file) throws Exception {
+	public List<String> uploadFile(MultipartFile file) throws Exception {
+		// error msg
+		List<String> checkErrorList = new ArrayList<String>();
+		StringBuffer errorMsg = new StringBuffer();
 		Workbook workbook = new XSSFWorkbook(file.getInputStream());
 		// Getting the Sheet at index zero
 		Sheet sheet = workbook.getSheetAt(0);
-		// Create a DataFormatter to format and get each cell's value as String
-		DataFormatter dataFormatter = new DataFormatter();
-		List<String[]> datas = new ArrayList<String[]>();
-		String[] data = null;
-		for (Row row : sheet) {
-			data = new String[15];
-			for (Cell cell : row) {
-				String cellValue = dataFormatter.formatCellValue(cell);
-				data[cell.getRowIndex()] = cellValue;
+		Integer noOfColumns = sheet.getRow(0).getPhysicalNumberOfCells();
+		if (noOfColumns == TOTAL_NO_OF_COLOUMNS) {
+			// Create a DataFormatter to format and get each cell's value as String
+			DataFormatter dataFormatter = new DataFormatter();
+			List<String[]> datas = new ArrayList<String[]>();
+			String[] data = null;
+			for (Row row : sheet) {
+				data = new String[15];
+				for (Cell cell : row) {
+					String cellValue = dataFormatter.formatCellValue(cell);
+					data[cell.getRowIndex()] = cellValue;
+				}
+				datas.add(data);
 			}
-			datas.add(data);
+			List<BulkVehicleUploadBean> beans = setBulkVehicleUploadBeanList(datas);
+		} else {
+			checkErrorList.add("No." + "1 " + "Columns does not match");
 		}
-		List<BulkVehicleUploadBean> beans = setBulkVehicleUploadBeanList(datas);
 		// Closing the workbook
 		workbook.close();
-		return null;
+		return checkErrorList;
 	}
 
 	private List<BulkVehicleUploadBean> setBulkVehicleUploadBeanList(List<String[]> datas) {

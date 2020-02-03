@@ -1,5 +1,7 @@
 package com.reqres.angular.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +22,7 @@ public class BulkVehicleUploadController {
 	public String uploadFile(@RequestParam("file") MultipartFile file) {
 		String response = "";
 		try {
-			response = bulkVehicleUploadService.uploadFile(file);
+			List<String> responseList = bulkVehicleUploadService.uploadFile(file);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
