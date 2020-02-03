@@ -1,5 +1,6 @@
 package com.reqres.angular.service;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,18 +17,15 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.reqres.angular.bean.BulkVehicleUploadBean;
-import com.reqres.angular.model.TbBrand;
 import com.reqres.angular.model.TbColour;
 import com.reqres.angular.model.TbConfigStatus;
 import com.reqres.angular.model.TbPaintType;
-import com.reqres.angular.model.TbSeries;
 import com.reqres.angular.model.TbVariant;
 import com.reqres.angular.model.TbVariantColour;
-import com.reqres.angular.repo.TbBrandRepository;
+import com.reqres.angular.model.TbVehicle;
+import com.reqres.angular.model.TbVehicleType;
 import com.reqres.angular.repo.TbColourRepository;
-import com.reqres.angular.repo.TbConfigStatusRepository;
 import com.reqres.angular.repo.TbPaintTypeRepository;
-import com.reqres.angular.repo.TbSeriesRepository;
 import com.reqres.angular.repo.TbVariantColourRepository;
 import com.reqres.angular.repo.TbVariantRepository;
 import com.reqres.angular.repo.TbVehicleRepository;
@@ -36,11 +34,8 @@ import com.reqres.angular.repo.TbVehicleTypeRepository;
 @Service("bulkVehicleUploadService")
 public class BulkVehicleUploadService {
 
-	private TbBrandRepository tbBrandRepository;
-	private TbSeriesRepository tbSeriesRepository;
 	private TbVariantRepository tbVariantRepository;
 	private TbColourRepository tbColourRepository;
-	private TbConfigStatusRepository tbConfigStatusRepository;
 	private TbPaintTypeRepository tbPaintTypeRepository;
 	private TbVehicleRepository tbVehicleRepository;
 	private TbVehicleTypeRepository tbVehicleTypeRepository;
@@ -48,18 +43,15 @@ public class BulkVehicleUploadService {
 
 	// Constants
 	private static final Integer TOTAL_NO_OF_COLOUMNS = 15;
+	private static final Long STATUS_WORKFLOW = 1L;
+	private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
 
 	@Autowired
-	public BulkVehicleUploadService(TbBrandRepository tbBrandRepository, TbSeriesRepository tbSeriesRepository,
-			TbVariantRepository tbVariantRepository, TbColourRepository tbColourRepository,
-			TbConfigStatusRepository tbConfigStatusRepository, TbPaintTypeRepository tbPaintTypeRepository,
-			TbVehicleRepository tbVehicleRepository, TbVehicleTypeRepository tbVehicleTypeRepository,
-			TbVariantColourRepository tbVariantColourRepository) {
-		this.tbBrandRepository = tbBrandRepository;
-		this.tbSeriesRepository = tbSeriesRepository;
+	public BulkVehicleUploadService(TbVariantRepository tbVariantRepository, TbColourRepository tbColourRepository,
+			TbPaintTypeRepository tbPaintTypeRepository, TbVehicleRepository tbVehicleRepository,
+			TbVehicleTypeRepository tbVehicleTypeRepository, TbVariantColourRepository tbVariantColourRepository) {
 		this.tbVariantRepository = tbVariantRepository;
 		this.tbColourRepository = tbColourRepository;
-		this.tbConfigStatusRepository = tbConfigStatusRepository;
 		this.tbPaintTypeRepository = tbPaintTypeRepository;
 		this.tbVehicleRepository = tbVehicleRepository;
 		this.tbVehicleTypeRepository = tbVehicleTypeRepository;
@@ -81,24 +73,32 @@ public class BulkVehicleUploadService {
 		Sheet sheet = workbook.getSheetAt(0);
 		Integer noOfColumns = sheet.getRow(0).getPhysicalNumberOfCells();
 		if (noOfColumns == TOTAL_NO_OF_COLOUMNS) {
-			// error msg
-			StringBuffer errorMsg = new StringBuffer();
 			// Create a DataFormatter to format and get each cell's value as String
-			DataFormatter dataFormatter = new DataFormatter();
 			List<String[]> datas = new ArrayList<String[]>();
 			String[] data = null;
+			DataFormatter dataFormatter = new DataFormatter();
 			for (Row row : sheet) {
-				if (row.getRowNum() != 1) {
+				if (row.getRowNum() != 0) {
+					Integer i = 0;
 					data = new String[15];
 					for (Cell cell : row) {
-						String cellValue = dataFormatter.formatCellValue(cell);
-						data[cell.getRowIndex()] = cellValue;
+						data[i] = dataFormatter.formatCellValue(cell);
+						i++;
 					}
 					datas.add(data);
 				}
 			}
 			List<BulkVehicleUploadBean> beans = setBulkVehicleUploadBeanList(datas);
-			validateBulkUpload(beans, errorMsg);
+			checkErrorOrSucessList = validateBulkUpload(beans, checkErrorOrSucessList);
+			if (CollectionUtils.isEmpty(checkErrorOrSucessList)) {
+				List<TbVehicle> vehicles = saveAllVehicleObjects(beans);
+				tbVehicleRepository.saveAll(vehicles);
+				Integer sno = 0;
+				for (BulkVehicleUploadBean bean : beans) {
+					checkErrorOrSucessList
+							.add("No." + (sno + 1) + " {" + bean.getVehicleChassisNo() + "} Successfully Uploaded.");
+				}
+			}
 		} else {
 			checkErrorOrSucessList.add("No." + "1 " + "Columns does not match");
 		}
@@ -107,43 +107,91 @@ public class BulkVehicleUploadService {
 		return checkErrorOrSucessList;
 	}
 
-	private void validateBulkUpload(List<BulkVehicleUploadBean> beans, StringBuffer errorMsg) {
-		Integer loop = 0;
+	private List<TbVehicle> saveAllVehicleObjects(List<BulkVehicleUploadBean> beans) throws Exception {
+		List<TbVehicle> vehiclesList = new ArrayList<TbVehicle>();
 		for (BulkVehicleUploadBean bean : beans) {
-			loop = loop + 1;
-			validateModel(errorMsg, bean.getVehicleModel(), loop, bean.getVehicleChassisNo(),
-					bean.getVehicleEngineNo());
-			validateColour(errorMsg, bean.getVehicleModel(), bean.getVehicleColour(), loop, bean.getVehiclePaintType());
-			loop++;
+			TbVehicle v = new TbVehicle();
+			v.setChassisNo(bean.getVehicleChassisNo());
+			v.setEngineNo(bean.getVehicleEngineNo());
+			v.setLotNo(bean.getVehicleLotNo());
+			v.setReceiptNo(bean.getVehicleReceiptNo());
+			v.setRemark1(bean.getVehicleRemark1());
+			v.setRemark2(bean.getVehicleRemark2());
+			v.setSequenceNo(bean.getVehicleSeqNo());
+			v.setCkdImportDate(dateFormat.parse(bean.getVehicleCkdImportDate()));
+			v.setEtd(dateFormat.parse(bean.getVehicleETD()));
+			v.setProductionDate(dateFormat.parse(bean.getVehicleProductionDate()));
+			// variant
+			TbVariant tbVariant = tbVariantRepository.findByVariantName(bean.getVehicleModel());
+			v.setTbVariant(tbVariant);
+			// status
+			TbConfigStatus tbConfigStatus = new TbConfigStatus();
+			tbConfigStatus.setStatusId(STATUS_WORKFLOW);
+			v.setTbConfigStatus(tbConfigStatus);
+			// colour
+			List<TbColour> colours = tbColourRepository.findColourWithPaintType(bean.getVehicleColour(),
+					bean.getVehiclePaintType());
+			v.setTbColour(colours.get(0));
+			// vehicle Type
+			TbVehicleType tbVehicleType = tbVehicleTypeRepository.findByVehicleType(bean.getVehicleType());
+			v.setTbVehicleType(tbVehicleType);
+			vehiclesList.add(v);
 		}
+		return vehiclesList;
+
 	}
 
-	private void validateColour(StringBuffer errorMsg, String vehicleModel, String vehicleColour, Integer loop,
-			String vehiclePaintType) {
-		if (StringUtils.isEmpty(vehicleColour) || StringUtils.isEmpty(vehiclePaintType)) {
-			errorMsg.append("Colour or painttype Cannot be empty" + ",");
-		} else {
-			List<TbVariantColour> list = tbVariantColourRepository.checkColourAndPaintTypeLinkedtoModel(vehicleModel,
-					vehicleColour, vehiclePaintType);
-			if (CollectionUtils.isEmpty(list)) {
-				errorMsg.append("Colour or painttype not linked to model" + ";");
+	private List<String> validateBulkUpload(List<BulkVehicleUploadBean> beans, List<String> checkErrorOrSucessList) {
+		Integer loop = 0;
+		List<String> vehicleChassis = new ArrayList<String>();
+		List<String> vehicleEngine = new ArrayList<String>();
+		for (BulkVehicleUploadBean bean : beans) {
+			StringBuffer errorMsg = new StringBuffer();
+			loop = loop + 1;
+			validateModel(errorMsg, bean.getVehicleModel(), bean.getVehicleChassisNo(), bean.getVehicleEngineNo());
+			validateColour(errorMsg, bean.getVehicleModel(), bean.getVehicleColour(), bean.getVehiclePaintType());
+			validateChassisNo(errorMsg, bean.getVehicleChassisNo());
+			validateEngineNo(errorMsg, bean.getVehicleEngineNo());
+			if (vehicleChassis.contains(bean.getVehicleChassisNo()) && bean.getVehicleChassisNo() != null
+					&& !bean.getVehicleChassisNo().equals("")) {
+				errorMsg.append("Chassis No already exists in Sheet" + ";");
+			}
+
+			if (vehicleEngine.contains(bean.getVehicleEngineNo()) && bean.getVehicleEngineNo() != null
+					&& !bean.getVehicleEngineNo().equals("")) {
+				errorMsg.append("Engine No already exists in Sheet" + ";");
+			}
+
+			vehicleChassis.add(bean.getVehicleChassisNo());
+			vehicleEngine.add(bean.getVehicleEngineNo());
+			validateVehicleType(errorMsg, bean.getVehicleType());
+			if (errorMsg.length() > 0) {
+				checkErrorOrSucessList.add("No." + (loop) + " " + errorMsg.toString());
 			}
 		}
+		return checkErrorOrSucessList;
 	}
 
-	private void validateModel(StringBuffer errorMsg, String vehicleModel, int i, String vehicleChassisNo,
+	/**
+	 * 
+	 * @param errorMsg
+	 * @param vehicleModel
+	 * @param vehicleChassisNo
+	 * @param vehicleEngineNo
+	 */
+	private void validateModel(StringBuffer errorMsg, String vehicleModel, String vehicleChassisNo,
 			String vehicleEngineNo) {
 		TbVariant variant = null;
 		if (StringUtils.isEmpty(vehicleModel)) {
-			errorMsg.append("Model Cannot be empty" + ",");
+			errorMsg.append("Model Name Cannot be empty" + ",");
 		} else {
 			variant = tbVariantRepository.findByVariantName(vehicleModel);
 			if (variant == null) {
-				errorMsg.append("Model does not exists" + ";");
+				errorMsg.append("Model Name does not exists" + ";");
 			}
 		}
 		// chassis no
-		if (variant == null) {
+		if (variant != null) {
 			if (StringUtils.isEmpty(vehicleChassisNo)) {
 				errorMsg.append("chassisNo Cannot be empty" + ",");
 			} else {
@@ -161,14 +209,14 @@ public class BulkVehicleUploadService {
 				}
 			}
 		}
-//engine no
-		if (variant == null) {
+		// engine no
+		if (variant != null) {
 			if (StringUtils.isEmpty(vehicleEngineNo)) {
 				errorMsg.append("EngineNo Cannot be empty" + ",");
 			} else {
 				Integer engineNoLength = vehicleEngineNo.length();
 				if (Integer.parseInt(variant.getLenOfEngineNo()) != engineNoLength) {
-					errorMsg.append("Engine No-{" + vehicleChassisNo
+					errorMsg.append("Engine No-{" + vehicleEngineNo
 							+ "} Length is Not Equal To Length Configured in Model " + ",");
 				}
 				String[] engineNoPrefixes = variant.getPrefixEngineNo().split("\\,");
@@ -178,6 +226,66 @@ public class BulkVehicleUploadService {
 								+ "} prefix is Not matched with prefix Configured in Model " + ",");
 					}
 				}
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * @param errorMsg
+	 * @param vehicleModel
+	 * @param vehicleColour
+	 * @param vehiclePaintType
+	 */
+	private void validateColour(StringBuffer errorMsg, String vehicleModel, String vehicleColour,
+			String vehiclePaintType) {
+		if (StringUtils.isEmpty(vehicleColour) || StringUtils.isEmpty(vehiclePaintType)) {
+			errorMsg.append("Colour or Paint Type Cannot be empty" + ",");
+		} else {
+			List<TbVariantColour> list = tbVariantColourRepository.checkColourAndPaintTypeLinkedtoModel(vehicleModel,
+					vehicleColour, vehiclePaintType);
+			if (CollectionUtils.isEmpty(list)) {
+				errorMsg.append("Colour or Paint Type not linked to model" + ";");
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * @param errorMsg
+	 * @param vehicleChassisNo
+	 */
+	private void validateChassisNo(StringBuffer errorMsg, String vehicleChassisNo) {
+		List<TbVehicle> vehicleList = tbVehicleRepository.findByChassisNo(vehicleChassisNo);
+		if (!CollectionUtils.isEmpty(vehicleList)) {
+			errorMsg.append("Chassis No.  already exists {" + vehicleChassisNo + "};");
+		}
+	}
+
+	/**
+	 * 
+	 * @param errorMsg
+	 * @param vehicleEngineNo
+	 */
+	private void validateEngineNo(StringBuffer errorMsg, String vehicleEngineNo) {
+		List<TbVehicle> vehicleList = tbVehicleRepository.findByEngineNo(vehicleEngineNo);
+		if (!CollectionUtils.isEmpty(vehicleList)) {
+			errorMsg.append("Engine No.  already exists {" + vehicleEngineNo + "};");
+		}
+	}
+
+	/**
+	 * 
+	 * @param errorMsg
+	 * @param vehicleType
+	 */
+	private void validateVehicleType(StringBuffer errorMsg, String vehicleType) {
+		if (StringUtils.isEmpty(vehicleType)) {
+			errorMsg.append("Vehicle Type Cannot be empty" + ",");
+		} else {
+			TbVehicleType tbVehicleType = tbVehicleTypeRepository.findByVehicleType(vehicleType);
+			if (tbVehicleType == null) {
+				errorMsg.append("Vehicle Type does not exists" + ";");
 			}
 		}
 	}

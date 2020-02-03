@@ -8,4 +8,6 @@ import com.reqres.angular.model.TbVehicleType;
 @Repository("tbVehicleTypeRepository")
 public interface TbVehicleTypeRepository extends JpaRepository<TbVehicleType, Long> {
 
+	public TbVehicleType findByVehicleType(String vehicleType);
+
 }

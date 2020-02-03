@@ -15,8 +15,9 @@ public interface TbVariantColourRepository extends JpaRepository<TbVariantColour
 	@Query("from TbVariantColour vc left outer join fetch vc.tbVariant v where v.id= :variantId")
 	public List<TbVariantColour> findByVariantId(@Param("variantId") Long variantId);
 
-	@Query("from TbVariantColour vc left join vc.tbVariant v left join vc.TbColour c left join c.tbPaintType p where c.colourName = :colourName and v.variantName = :modelName and p.paintTypeName = :paintType ")
-	public List<TbVariantColour> checkColourAndPaintTypeLinkedtoModel(@Param("modelName") String vehicleModel,
+	@Query("from TbVariantColour vc left join vc.tbVariant v left join vc.tbColour c left join c.tbPaintType p "
+			+ " where c.colourName = :colourName and v.variantName = :variantName and p.paintTypeName = :paintType ")
+	public List<TbVariantColour> checkColourAndPaintTypeLinkedtoModel(@Param("variantName") String vehicleModel,
 			@Param("colourName") String vehicleColour, @Param("paintType") String vehiclePaintType);
 
 }

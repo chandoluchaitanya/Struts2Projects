@@ -16,4 +16,8 @@ public interface TbColourRepository extends JpaRepository<TbColour, Long> {
 	public List<TbColour> findColoursOtherThanVariantColoursIds(@Param("ids") List<Long> ids);
 
 	public TbColour findOneById(Long id);
+
+	@Query("from TbColour c left join c.tbPaintType pt where c.colourName = :colourName and pt.code = :paintType ")
+	public List<TbColour> findColourWithPaintType(@Param("colourName") String colourName,
+			@Param("paintType") String paintType);
 }
