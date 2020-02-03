@@ -12,7 +12,6 @@ public class BulkVehicleUploadBean {
 	private String vehicleCkdImportDate;
 	private String vehicleProductionDate;
 	private String vehicleETD;
-	private String vehicleInternalNo;
 	private String vehicleRemark1;
 	private String vehicleRemark2;
 	private String vehicleReceiptNo;
@@ -22,8 +21,7 @@ public class BulkVehicleUploadBean {
 	public BulkVehicleUploadBean(String vehicleModel, String vehicleColour, String vehiclePaintType,
 			String vehicleChassisNo, String vehicleEngineNo, String vehicleYearMade, String vehicleSeqNo,
 			String vehicleLotNo, String vehicleCkdImportDate, String vehicleProductionDate, String vehicleETD,
-			String vehicleInternalNo, String vehicleRemark1, String vehicleRemark2, String vehicleReceiptNo,
-			String vehicleType) {
+			String vehicleRemark1, String vehicleRemark2, String vehicleReceiptNo, String vehicleType) {
 		this.vehicleModel = vehicleModel;
 		this.vehicleColour = vehicleColour;
 		this.vehiclePaintType = vehiclePaintType;
@@ -35,7 +33,6 @@ public class BulkVehicleUploadBean {
 		this.vehicleCkdImportDate = vehicleCkdImportDate;
 		this.vehicleProductionDate = vehicleProductionDate;
 		this.vehicleETD = vehicleETD;
-		this.vehicleInternalNo = vehicleInternalNo;
 		this.vehicleRemark1 = vehicleRemark1;
 		this.vehicleRemark2 = vehicleRemark2;
 		this.vehicleReceiptNo = vehicleReceiptNo;
@@ -128,14 +125,6 @@ public class BulkVehicleUploadBean {
 
 	public void setVehicleETD(String vehicleETD) {
 		this.vehicleETD = vehicleETD;
-	}
-
-	public String getVehicleInternalNo() {
-		return vehicleInternalNo;
-	}
-
-	public void setVehicleInternalNo(String vehicleInternalNo) {
-		this.vehicleInternalNo = vehicleInternalNo;
 	}
 
 	public String getVehicleRemark1() {
