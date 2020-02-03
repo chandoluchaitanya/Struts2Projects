@@ -10,4 +10,6 @@ public interface TbVariantRepository extends JpaRepository<TbVariant, Long> {
 
 	public TbVariant findOneById(Long id);
 
+	public TbVariant findByVariantName(String vehicleModel);
+
 }
