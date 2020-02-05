@@ -203,7 +203,7 @@ public class BulkVehicleUploadService {
 			String vehicleEngineNo) {
 		TbVariant variant = null;
 		if (StringUtils.isEmpty(vehicleModel)) {
-			errorMsg.append("Model Name Cannot be empty" + ",");
+			errorMsg.append("Model Name Cannot be empty" + ";");
 		} else {
 			variant = tbVariantRepository.findByVariantName(vehicleModel);
 			if (variant == null) {
@@ -213,18 +213,18 @@ public class BulkVehicleUploadService {
 		// chassis no
 		if (variant != null) {
 			if (StringUtils.isEmpty(vehicleChassisNo)) {
-				errorMsg.append("chassisNo Cannot be empty" + ",");
+				errorMsg.append("chassisNo Cannot be empty" + ";");
 			} else {
 				Integer chassisNoLength = vehicleChassisNo.length();
 				if (Integer.parseInt(variant.getLenOfChassisNo()) != chassisNoLength) {
 					errorMsg.append("Chassis No-{" + vehicleChassisNo
-							+ "} Length is Not Equal To Length Configured in Model " + ",");
+							+ "} Length is Not Equal To Length Configured in Model " + ";");
 				}
 				String[] chassisNoPrefixes = variant.getPrefixChassisNo().split("\\,");
 				for (String prefix : chassisNoPrefixes) {
 					if (!(vehicleChassisNo.substring(0, prefix.length()).equals(prefix))) {
 						errorMsg.append("ChassisNo-{" + vehicleChassisNo
-								+ "} prefix is Not matched with prefix Configured in Model " + ",");
+								+ "} prefix is Not matched with prefix Configured in Model " + ";");
 					}
 				}
 			}
@@ -232,18 +232,18 @@ public class BulkVehicleUploadService {
 		// engine no
 		if (variant != null) {
 			if (StringUtils.isEmpty(vehicleEngineNo)) {
-				errorMsg.append("EngineNo Cannot be empty" + ",");
+				errorMsg.append("EngineNo Cannot be empty" + ";");
 			} else {
 				Integer engineNoLength = vehicleEngineNo.length();
 				if (Integer.parseInt(variant.getLenOfEngineNo()) != engineNoLength) {
 					errorMsg.append("Engine No-{" + vehicleEngineNo
-							+ "} Length is Not Equal To Length Configured in Model " + ",");
+							+ "} Length is Not Equal To Length Configured in Model " + ";");
 				}
 				String[] engineNoPrefixes = variant.getPrefixEngineNo().split("\\,");
 				for (String prefix : engineNoPrefixes) {
 					if (!(vehicleEngineNo.substring(0, prefix.length()).equals(prefix))) {
 						errorMsg.append("Engine No -{" + vehicleEngineNo
-								+ "} prefix is Not matched with prefix Configured in Model " + ",");
+								+ "} prefix is Not matched with prefix Configured in Model " + ";");
 					}
 				}
 			}
@@ -260,7 +260,7 @@ public class BulkVehicleUploadService {
 	private void validateColour(StringBuffer errorMsg, String vehicleModel, String vehicleColour,
 			String vehiclePaintType) {
 		if (StringUtils.isEmpty(vehicleColour) || StringUtils.isEmpty(vehiclePaintType)) {
-			errorMsg.append("Colour or Paint Type Cannot be empty" + ",");
+			errorMsg.append("Colour or Paint Type Cannot be empty" + ";");
 		} else {
 			List<TbVariantColour> list = tbVariantColourRepository.checkColourAndPaintTypeLinkedtoModel(vehicleModel,
 					vehicleColour, vehiclePaintType);
@@ -301,7 +301,7 @@ public class BulkVehicleUploadService {
 	 */
 	private void validateVehicleType(StringBuffer errorMsg, String vehicleType) {
 		if (StringUtils.isEmpty(vehicleType)) {
-			errorMsg.append("Vehicle Type Cannot be empty" + ",");
+			errorMsg.append("Vehicle Type Cannot be empty" + ";");
 		} else {
 			TbVehicleType tbVehicleType = tbVehicleTypeRepository.findByVehicleType(vehicleType);
 			if (tbVehicleType == null) {
@@ -313,25 +313,25 @@ public class BulkVehicleUploadService {
 	private void validateCkdDateAndETDDateAndProdDate(StringBuffer errorMsg, String vehicleCkdImportDate,
 			String vehicleETD, String vehicleProductionDate) {
 		if (StringUtils.isEmpty(vehicleCkdImportDate)) {
-			errorMsg.append("Ckd ImportDate Cannot be empty" + ",");
+			errorMsg.append("Ckd ImportDate Cannot be empty" + ";");
 		}
 
 		if (StringUtils.isEmpty(vehicleETD)) {
-			errorMsg.append("ETD Date Cannot be empty" + ",");
+			errorMsg.append("ETD Date Cannot be empty" + ";");
 		}
 
 		if (StringUtils.isEmpty(vehicleProductionDate)) {
-			errorMsg.append("Production Date Cannot be empty" + ",");
+			errorMsg.append("Production Date Cannot be empty" + ";");
 		}
 	}
 
 	private void validateLotNoAndYearMade(StringBuffer errorMsg, String vehicleLotNo, String vehicleYearMade) {
 		if (StringUtils.isEmpty(vehicleLotNo)) {
-			errorMsg.append("Lot No Cannot be empty" + ",");
+			errorMsg.append("Lot No Cannot be empty" + ";");
 		}
 
 		if (StringUtils.isEmpty(vehicleYearMade)) {
-			errorMsg.append("Year Made Cannot be empty" + ",");
+			errorMsg.append("Year Made Cannot be empty" + ";");
 		}
 	}
 }
