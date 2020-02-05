@@ -107,6 +107,16 @@ public class BulkVehicleUploadService {
 		return checkErrorOrSucessList;
 	}
 
+	private List<BulkVehicleUploadBean> setBulkVehicleUploadBeanList(List<String[]> datas) {
+		List<BulkVehicleUploadBean> list = new ArrayList<BulkVehicleUploadBean>();
+		for (String[] data : datas) {
+			BulkVehicleUploadBean bean = new BulkVehicleUploadBean(data[0], data[1], data[2], data[3], data[4], data[5],
+					data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14]);
+			list.add(bean);
+		}
+		return list;
+	}
+
 	private List<TbVehicle> saveAllVehicleObjects(List<BulkVehicleUploadBean> beans) throws Exception {
 		List<TbVehicle> vehiclesList = new ArrayList<TbVehicle>();
 		for (BulkVehicleUploadBean bean : beans) {
@@ -141,6 +151,13 @@ public class BulkVehicleUploadService {
 
 	}
 
+	/**
+	 * Validation for bulk upload
+	 * 
+	 * @param beans
+	 * @param checkErrorOrSucessList
+	 * @return
+	 */
 	private List<String> validateBulkUpload(List<BulkVehicleUploadBean> beans, List<String> checkErrorOrSucessList) {
 		Integer loop = 0;
 		List<String> vehicleChassis = new ArrayList<String>();
@@ -165,6 +182,9 @@ public class BulkVehicleUploadService {
 			vehicleChassis.add(bean.getVehicleChassisNo());
 			vehicleEngine.add(bean.getVehicleEngineNo());
 			validateVehicleType(errorMsg, bean.getVehicleType());
+			validateLotNoAndYearMade(errorMsg, bean.getVehicleLotNo(), bean.getVehicleYearMade());
+			validateCkdDateAndETDDateAndProdDate(errorMsg, bean.getVehicleCkdImportDate(), bean.getVehicleETD(),
+					bean.getVehicleProductionDate());
 			if (errorMsg.length() > 0) {
 				checkErrorOrSucessList.add("No." + (loop) + " " + errorMsg.toString());
 			}
@@ -290,14 +310,28 @@ public class BulkVehicleUploadService {
 		}
 	}
 
-	private List<BulkVehicleUploadBean> setBulkVehicleUploadBeanList(List<String[]> datas) {
-		List<BulkVehicleUploadBean> list = new ArrayList<BulkVehicleUploadBean>();
-		for (String[] data : datas) {
-			BulkVehicleUploadBean bean = new BulkVehicleUploadBean(data[0], data[1], data[2], data[3], data[4], data[5],
-					data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14]);
-			list.add(bean);
+	private void validateCkdDateAndETDDateAndProdDate(StringBuffer errorMsg, String vehicleCkdImportDate,
+			String vehicleETD, String vehicleProductionDate) {
+		if (StringUtils.isEmpty(vehicleCkdImportDate)) {
+			errorMsg.append("Ckd ImportDate Cannot be empty" + ",");
 		}
-		return list;
+
+		if (StringUtils.isEmpty(vehicleETD)) {
+			errorMsg.append("ETD Date Cannot be empty" + ",");
+		}
+
+		if (StringUtils.isEmpty(vehicleProductionDate)) {
+			errorMsg.append("Production Date Cannot be empty" + ",");
+		}
 	}
 
+	private void validateLotNoAndYearMade(StringBuffer errorMsg, String vehicleLotNo, String vehicleYearMade) {
+		if (StringUtils.isEmpty(vehicleLotNo)) {
+			errorMsg.append("Lot No Cannot be empty" + ",");
+		}
+
+		if (StringUtils.isEmpty(vehicleYearMade)) {
+			errorMsg.append("Year Made Cannot be empty" + ",");
+		}
+	}
 }
