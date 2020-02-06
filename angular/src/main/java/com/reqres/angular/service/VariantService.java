@@ -156,7 +156,7 @@ public class VariantService {
 		Integer maxResults = 5;
 		List<TbVariant> tbVariantsList = searchVariantDetails(variantBean, start, maxResults);
 		Integer count = countVariantDetails(variantBean).intValue();
-		// set user details
+		// set Variant details
 		List<VariantBean> list = new ArrayList<VariantBean>();
 		if (!CollectionUtils.isEmpty(tbVariantsList)) {
 			for (TbVariant v : tbVariantsList) {
