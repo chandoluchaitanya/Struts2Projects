@@ -128,6 +128,7 @@ public class BulkVehicleUploadService {
 			v.setRemark1(bean.getVehicleRemark1());
 			v.setRemark2(bean.getVehicleRemark2());
 			v.setSequenceNo(bean.getVehicleSeqNo());
+			v.setYearMade(Integer.parseInt(bean.getVehicleYearMade()));
 			v.setCkdImportDate(dateFormat.parse(bean.getVehicleCkdImportDate()));
 			v.setEtd(dateFormat.parse(bean.getVehicleETD()));
 			v.setProductionDate(dateFormat.parse(bean.getVehicleProductionDate()));
