@@ -17,7 +17,9 @@ import com.reqres.angular.model.TbConfigStatus;
 import com.reqres.angular.model.TbEndorse;
 import com.reqres.angular.model.TbGender;
 import com.reqres.angular.model.TbPackingList;
+import com.reqres.angular.model.TbPaintType;
 import com.reqres.angular.model.TbSeries;
+import com.reqres.angular.model.TbVariant;
 import com.reqres.angular.model.TbVehicle;
 import com.reqres.angular.model.TbVehicleType;
 import com.reqres.angular.repo.TbBrandRepository;
@@ -113,6 +115,14 @@ public class VehicleService {
 
 	public List<TbColour> findAllColours() {
 		return tbColourRepository.findAll();
+	}
+
+	public List<TbVariant> findAllVariants() {
+		return tbVariantRepository.findAll();
+	}
+
+	public List<TbPaintType> findAllPaintTypes() {
+		return tbPaintTypeRepository.findAll();
 	}
 
 	public VehicleBeanForEdit getVehicleInfo(String id) {
