@@ -70,6 +70,12 @@ public class TbVehicle {
 	@JoinColumn(name = "vehicleTypeId", nullable = false)
 	private TbVehicleType tbVehicleType;
 
+	@Column(name = "isCompanyown")
+	private Byte isCompanyown;
+	
+	@Column(name = "isReadyforSale")
+	private Byte isReadyforSale;
+
 	public Long getId() {
 		return id;
 	}
