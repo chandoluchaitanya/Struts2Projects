@@ -67,6 +67,10 @@ public class VariantService {
 	public List<TbConfigStatus> findAllStatuses() {
 		return tbConfigStatusRepository.findAll();
 	}
+	
+	public List<TbVariant> findAllVariants() {
+		return tbVariantRepository.findAll();
+	}
 
 	/**
 	 * Save Variant
@@ -253,5 +257,24 @@ public class VariantService {
 		va.setStatuses(statusList);
 		// set Basic details -->END
 		return va;
+	}
+
+	public List<TbVariant> getVariantDetailsBySeriesId(String id) {
+		List<TbVariant> variantList = tbVariantRepository.getVariantDetailsBySeriesId(Long.parseLong(id));
+		return variantList;
+	}
+
+	public List<Colour> getColourDetailsByVariantId(String id) {
+		List<Colour> colours = new ArrayList<Colour>();
+		List<TbVariantColour> variantColoursList = tbVariantColourRepository.findByVariantId(Long.parseLong(id));
+		if (!CollectionUtils.isEmpty(variantColoursList)) {
+			for (TbVariantColour vc : variantColoursList) {
+				Colour c = new Colour();
+				c.setId(vc.getTbColour().getId().toString());
+				c.setColourName(vc.getTbColour().getColourName());
+				colours.add(c);
+			}
+		}
+		return colours;
 	}
 }

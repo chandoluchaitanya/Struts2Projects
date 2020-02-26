@@ -6,13 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.reqres.angular.bean.Colour;
 import com.reqres.angular.bean.PaginationUtilDTO;
 import com.reqres.angular.bean.SearchVehicleBean;
 import com.reqres.angular.bean.TbCustomerVehicleOwnedInfo;
 import com.reqres.angular.bean.VehicleBeanForEdit;
+import com.reqres.angular.bean.VehicleBeanForUpdate;
 import com.reqres.angular.dto.VehicleFilterDTO;
 import com.reqres.angular.model.TbBrand;
-import com.reqres.angular.model.TbColour;
 import com.reqres.angular.model.TbConfigStatus;
 import com.reqres.angular.model.TbEndorse;
 import com.reqres.angular.model.TbGender;
@@ -22,18 +23,11 @@ import com.reqres.angular.model.TbSeries;
 import com.reqres.angular.model.TbVariant;
 import com.reqres.angular.model.TbVehicle;
 import com.reqres.angular.model.TbVehicleType;
-import com.reqres.angular.repo.TbBrandRepository;
-import com.reqres.angular.repo.TbColourRepository;
-import com.reqres.angular.repo.TbConfigStatusRepository;
-import com.reqres.angular.repo.TbCustomerRepository;
 import com.reqres.angular.repo.TbCustomerVehicleOwnedInfoRepository;
 import com.reqres.angular.repo.TbEndorseRepository;
 import com.reqres.angular.repo.TbGenderRepository;
 import com.reqres.angular.repo.TbPackingListRepository;
 import com.reqres.angular.repo.TbPaintTypeRepository;
-import com.reqres.angular.repo.TbSeriesRepository;
-import com.reqres.angular.repo.TbVariantColourRepository;
-import com.reqres.angular.repo.TbVariantRepository;
 import com.reqres.angular.repo.TbVehicleRepository;
 import com.reqres.angular.repo.TbVehicleTypeRepository;
 import com.reqres.angular.repo.VehicleDao;
@@ -41,44 +35,29 @@ import com.reqres.angular.repo.VehicleDao;
 @Service("vehicleService")
 public class VehicleService {
 
+	private VariantService variantService;
 	private VehicleDao vehicleDao;
-	private TbBrandRepository tbBrandRepository;
-	private TbSeriesRepository tbSeriesRepository;
-	private TbColourRepository tbColourRepository;
-	private TbVariantRepository tbVariantRepository;
-	private TbVariantColourRepository tbVariantColourRepository;
-	private TbConfigStatusRepository tbConfigStatusRepository;
 	private TbPaintTypeRepository tbPaintTypeRepository;
 	private TbVehicleTypeRepository tbVehicleTypeRepository;
 	private TbVehicleRepository tbVehicleRepository;
 	private TbEndorseRepository tbEndorseRepository;
 	private TbPackingListRepository tbPackingListRepository;
-	private TbCustomerRepository tbCustomerRepository;
 	private TbGenderRepository tbGenderRepository;
 	private TbCustomerVehicleOwnedInfoRepository tbCustomerVehicleOwnedInfoRepository;
 
 	@Autowired
-	public VehicleService(VehicleDao vehicleDao, TbBrandRepository tbBrandRepository,
-			TbSeriesRepository tbSeriesRepository, TbColourRepository tbColourRepository,
-			TbVariantRepository tbVariantRepository, TbVariantColourRepository tbVariantColourRepository,
-			TbConfigStatusRepository tbConfigStatusRepository, TbPaintTypeRepository tbPaintTypeRepository,
-			TbVehicleTypeRepository tbVehicleTypeRepository, TbVehicleRepository tbVehicleRepository,
-			TbEndorseRepository tbEndorseRepository, TbPackingListRepository tbPackingListRepository,
-			TbCustomerRepository tbCustomerRepository, TbGenderRepository tbGenderRepository,
+	public VehicleService(VariantService variantService, VehicleDao vehicleDao,
+			TbPaintTypeRepository tbPaintTypeRepository, TbVehicleTypeRepository tbVehicleTypeRepository,
+			TbVehicleRepository tbVehicleRepository, TbEndorseRepository tbEndorseRepository,
+			TbPackingListRepository tbPackingListRepository, TbGenderRepository tbGenderRepository,
 			TbCustomerVehicleOwnedInfoRepository tbCustomerVehicleOwnedInfoRepository) {
+		this.variantService = variantService;
 		this.vehicleDao = vehicleDao;
-		this.tbBrandRepository = tbBrandRepository;
-		this.tbSeriesRepository = tbSeriesRepository;
-		this.tbColourRepository = tbColourRepository;
-		this.tbVariantRepository = tbVariantRepository;
-		this.tbVariantColourRepository = tbVariantColourRepository;
-		this.tbConfigStatusRepository = tbConfigStatusRepository;
 		this.tbPaintTypeRepository = tbPaintTypeRepository;
 		this.tbVehicleTypeRepository = tbVehicleTypeRepository;
 		this.tbVehicleRepository = tbVehicleRepository;
 		this.tbEndorseRepository = tbEndorseRepository;
 		this.tbPackingListRepository = tbPackingListRepository;
-		this.tbCustomerRepository = tbCustomerRepository;
 		this.tbGenderRepository = tbGenderRepository;
 		this.tbCustomerVehicleOwnedInfoRepository = tbCustomerVehicleOwnedInfoRepository;
 	}
@@ -105,35 +84,23 @@ public class VehicleService {
 		return vehicleDao.countVehicleDetails(searchVehicleBean).intValue();
 	}
 
-	public List<TbBrand> findAllBrands() {
-		return tbBrandRepository.findAll();
-	}
-
-	public List<TbSeries> findAllSeries() {
-		return tbSeriesRepository.findAll();
-	}
-
-	public List<TbColour> findAllColours() {
-		return tbColourRepository.findAll();
-	}
-
-	public List<TbVariant> findAllVariants() {
-		return tbVariantRepository.findAll();
-	}
-
 	public List<TbPaintType> findAllPaintTypes() {
 		return tbPaintTypeRepository.findAll();
 	}
 
 	public VehicleBeanForEdit getVehicleInfo(String id) {
 		TbVehicle vehicle = tbVehicleRepository.findByVehicleIdWithInitialization(Long.parseLong(id));
-		List<TbConfigStatus> status = tbConfigStatusRepository.findAll();
+		List<TbConfigStatus> status = variantService.findAllStatuses();
 		List<TbVehicleType> vehicleTypes = tbVehicleTypeRepository.findAll();
 		List<TbGender> genders = tbGenderRepository.findAll();
 		List<TbCustomerVehicleOwnedInfo> vehicleOwnedInfoList = tbCustomerVehicleOwnedInfoRepository
 				.findCustomerByVehicleId(Long.parseLong(id));
 		List<TbEndorse> endorseList = tbEndorseRepository.findEndorseDetailsByVehicleId(Long.parseLong(id));
 		List<TbPackingList> packingLists = tbPackingListRepository.findPackingListByVehicleId(Long.parseLong(id));
+		List<TbBrand> brandsList = variantService.findAllBrands();
+		List<TbSeries> seriesList = variantService.findAllSeries();
+		List<TbVariant> variantList = variantService.findAllVariants();
+		List<Colour> colourList = variantService.getColourDetailsByVariantId(vehicle.getTbVariant().getId().toString());
 		// set details to load in edit page
 		VehicleBeanForEdit vbe = new VehicleBeanForEdit();
 		vbe.setStatusList(status);
@@ -144,6 +111,15 @@ public class VehicleService {
 				CollectionUtils.isEmpty(vehicleOwnedInfoList) ? null : vehicleOwnedInfoList.get(0));
 		vbe.setEndorse(CollectionUtils.isEmpty(endorseList) ? null : endorseList.get(0));
 		vbe.setPackingList(CollectionUtils.isEmpty(packingLists) ? null : packingLists.get(0));
+		vbe.setBrandsList(brandsList);
+		vbe.setSeriesList(seriesList);
+		vbe.setVariantList(variantList);
+		vbe.setColourList(colourList);
 		return vbe;
+	}
+
+	public String updateVehicleDetails(VehicleBeanForUpdate bean) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

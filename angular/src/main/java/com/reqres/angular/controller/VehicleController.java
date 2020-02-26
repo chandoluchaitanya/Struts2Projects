@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reqres.angular.bean.PaginationUtilDTO;
 import com.reqres.angular.bean.SearchVehicleBean;
 import com.reqres.angular.bean.VehicleBeanForEdit;
+import com.reqres.angular.bean.VehicleBeanForUpdate;
 import com.reqres.angular.service.VehicleService;
 
 @CrossOrigin(origins = "*")
@@ -34,7 +35,7 @@ public class VehicleController {
 		}
 		return response;
 	}
-	
+
 	@GetMapping(value = "/getVehicleInfo/{id}")
 	public String getVehicleInfo(@PathVariable("id") String id) {
 		String response = "";
@@ -48,5 +49,17 @@ public class VehicleController {
 			e.printStackTrace();
 		}
 		return response;
+	}
+
+	@PostMapping(value = "/vehicle/update", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public String updateVehicleDetails(@RequestBody VehicleBeanForUpdate bean) {
+		String status = null;
+		try {
+			status = vehicleService.updateVehicleDetails(bean);
+		} catch (Exception e) {
+			e.printStackTrace();
+			status = "0";
+		}
+		return status;
 	}
 }

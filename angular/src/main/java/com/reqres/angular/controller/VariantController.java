@@ -12,11 +12,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.reqres.angular.bean.Colour;
 import com.reqres.angular.bean.PaginationUtilDTO;
 import com.reqres.angular.bean.VariantBean;
 import com.reqres.angular.bean.VariantBeanForAdd;
 import com.reqres.angular.bean.VariantBeanForView;
 import com.reqres.angular.model.TbSeries;
+import com.reqres.angular.model.TbVariant;
 import com.reqres.angular.service.VariantService;
 
 @CrossOrigin(origins = "*")
@@ -101,6 +103,36 @@ public class VariantController {
 			if (va != null) {
 				ObjectMapper mapper = new ObjectMapper();
 				response = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(va);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	@GetMapping(value = "/getVariantDetailsBySeriesId/{id}")
+	public String getVariantDetailsBySeriesId(@PathVariable("id") String id) {
+		String response = "";
+		try {
+			List<TbVariant> variants = variantService.getVariantDetailsBySeriesId(id);
+			if (variants != null) {
+				ObjectMapper mapper = new ObjectMapper();
+				response = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(variants);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	@GetMapping(value = "/getColourDetailsByVariantId/{id}")
+	public String getColourDetailsByVariantId(@PathVariable("id") String id) {
+		String response = "";
+		try {
+			List<Colour> colours = variantService.getColourDetailsByVariantId(id);
+			if (colours != null) {
+				ObjectMapper mapper = new ObjectMapper();
+				response = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(colours);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
