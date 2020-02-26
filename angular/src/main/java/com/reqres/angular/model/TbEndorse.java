@@ -18,7 +18,6 @@ public class TbEndorse {
 	@Column(name = "id", length = 18)
 	private Long id;
 
-	@Id
 	@Column(name = "vehicleId", length = 18)
 	private Long vehicleId;
 
