@@ -80,21 +80,6 @@ public class VariantController {
 		return response;
 	}
 
-	@GetMapping(value = "/getSeriesDetailsByBrandId/{id}")
-	public String getSeriesDetailsByBrandId(@PathVariable("id") String id) {
-		String response = "";
-		try {
-			List<TbSeries> series = variantService.getSeriesDetailsByBrandId(id);
-			if (series != null) {
-				ObjectMapper mapper = new ObjectMapper();
-				response = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(series);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return response;
-	}
-
 	@GetMapping(value = "/variant/add", produces = MediaType.APPLICATION_JSON_VALUE)
 	public String addNewVariant() {
 		String response = "";
@@ -103,6 +88,21 @@ public class VariantController {
 			if (va != null) {
 				ObjectMapper mapper = new ObjectMapper();
 				response = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(va);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	@GetMapping(value = "/getSeriesDetailsByBrandId/{id}")
+	public String getSeriesDetailsByBrandId(@PathVariable("id") String id) {
+		String response = "";
+		try {
+			List<TbSeries> series = variantService.getSeriesDetailsByBrandId(id);
+			if (series != null) {
+				ObjectMapper mapper = new ObjectMapper();
+				response = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(series);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
