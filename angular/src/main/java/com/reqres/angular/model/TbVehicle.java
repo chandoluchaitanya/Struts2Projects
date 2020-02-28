@@ -21,15 +21,15 @@ public class TbVehicle {
 	@Column(name = "id", length = 18)
 	private Long id;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "variantId", nullable = false)
 	private TbVariant tbVariant;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "statusId", nullable = false)
 	private TbConfigStatus tbConfigStatus;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "colourId", nullable = false)
 	private TbColour tbColour;
 
@@ -66,15 +66,19 @@ public class TbVehicle {
 	@Column(name = "receiptNo", length = 50, nullable = false)
 	private String receiptNo;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "vehicleTypeId", nullable = false)
 	private TbVehicleType tbVehicleType;
 
 	@Column(name = "isCompanyown")
 	private Byte isCompanyown;
-	
+
 	@Column(name = "isReadyforSale")
 	private Byte isReadyforSale;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "customerId", nullable = false)
+	private TbCustomer tbCustomer;
 
 	public Long getId() {
 		return id;
@@ -203,4 +207,29 @@ public class TbVehicle {
 	public void setTbVehicleType(TbVehicleType tbVehicleType) {
 		this.tbVehicleType = tbVehicleType;
 	}
+
+	public Byte getIsCompanyown() {
+		return isCompanyown;
+	}
+
+	public void setIsCompanyown(Byte isCompanyown) {
+		this.isCompanyown = isCompanyown;
+	}
+
+	public Byte getIsReadyforSale() {
+		return isReadyforSale;
+	}
+
+	public void setIsReadyforSale(Byte isReadyforSale) {
+		this.isReadyforSale = isReadyforSale;
+	}
+
+	public TbCustomer getTbCustomer() {
+		return tbCustomer;
+	}
+
+	public void setTbCustomer(TbCustomer tbCustomer) {
+		this.tbCustomer = tbCustomer;
+	}
+
 }

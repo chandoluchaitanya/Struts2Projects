@@ -9,12 +9,12 @@ import org.springframework.util.CollectionUtils;
 import com.reqres.angular.bean.Colour;
 import com.reqres.angular.bean.PaginationUtilDTO;
 import com.reqres.angular.bean.SearchVehicleBean;
-import com.reqres.angular.bean.TbCustomerVehicleOwnedInfo;
 import com.reqres.angular.bean.VehicleBeanForEdit;
 import com.reqres.angular.bean.VehicleBeanForUpdate;
 import com.reqres.angular.dto.VehicleFilterDTO;
 import com.reqres.angular.model.TbBrand;
 import com.reqres.angular.model.TbConfigStatus;
+import com.reqres.angular.model.TbCustomer;
 import com.reqres.angular.model.TbEndorse;
 import com.reqres.angular.model.TbGender;
 import com.reqres.angular.model.TbPackingList;
@@ -23,7 +23,6 @@ import com.reqres.angular.model.TbSeries;
 import com.reqres.angular.model.TbVariant;
 import com.reqres.angular.model.TbVehicle;
 import com.reqres.angular.model.TbVehicleType;
-import com.reqres.angular.repo.TbCustomerVehicleOwnedInfoRepository;
 import com.reqres.angular.repo.TbEndorseRepository;
 import com.reqres.angular.repo.TbGenderRepository;
 import com.reqres.angular.repo.TbPackingListRepository;
@@ -31,6 +30,7 @@ import com.reqres.angular.repo.TbPaintTypeRepository;
 import com.reqres.angular.repo.TbVehicleRepository;
 import com.reqres.angular.repo.TbVehicleTypeRepository;
 import com.reqres.angular.repo.VehicleDao;
+import com.reqres.angular.util.DateUtil;
 
 @Service("vehicleService")
 public class VehicleService {
@@ -43,14 +43,12 @@ public class VehicleService {
 	private TbEndorseRepository tbEndorseRepository;
 	private TbPackingListRepository tbPackingListRepository;
 	private TbGenderRepository tbGenderRepository;
-	private TbCustomerVehicleOwnedInfoRepository tbCustomerVehicleOwnedInfoRepository;
 
 	@Autowired
 	public VehicleService(VariantService variantService, VehicleDao vehicleDao,
 			TbPaintTypeRepository tbPaintTypeRepository, TbVehicleTypeRepository tbVehicleTypeRepository,
 			TbVehicleRepository tbVehicleRepository, TbEndorseRepository tbEndorseRepository,
-			TbPackingListRepository tbPackingListRepository, TbGenderRepository tbGenderRepository,
-			TbCustomerVehicleOwnedInfoRepository tbCustomerVehicleOwnedInfoRepository) {
+			TbPackingListRepository tbPackingListRepository, TbGenderRepository tbGenderRepository) {
 		this.variantService = variantService;
 		this.vehicleDao = vehicleDao;
 		this.tbPaintTypeRepository = tbPaintTypeRepository;
@@ -59,7 +57,6 @@ public class VehicleService {
 		this.tbEndorseRepository = tbEndorseRepository;
 		this.tbPackingListRepository = tbPackingListRepository;
 		this.tbGenderRepository = tbGenderRepository;
-		this.tbCustomerVehicleOwnedInfoRepository = tbCustomerVehicleOwnedInfoRepository;
 	}
 
 	public PaginationUtilDTO getVehicleDetails(SearchVehicleBean searchVehicleBean) {
@@ -90,11 +87,9 @@ public class VehicleService {
 
 	public VehicleBeanForEdit getVehicleInfo(String id) {
 		TbVehicle vehicle = tbVehicleRepository.findByVehicleIdWithInitialization(Long.parseLong(id));
-		List<TbConfigStatus> status = variantService.findAllStatuses();
-		List<TbVehicleType> vehicleTypes = tbVehicleTypeRepository.findAll();
-		List<TbGender> genders = tbGenderRepository.findAll();
-		List<TbCustomerVehicleOwnedInfo> vehicleOwnedInfoList = tbCustomerVehicleOwnedInfoRepository
-				.findCustomerByVehicleId(Long.parseLong(id));
+		List<TbConfigStatus> statusList = variantService.findAllStatuses();
+		List<TbVehicleType> vehicleTypeList = tbVehicleTypeRepository.findAll();
+		List<TbGender> genderList = tbGenderRepository.findAll();
 		List<TbEndorse> endorseList = tbEndorseRepository.findEndorseDetailsByVehicleId(Long.parseLong(id));
 		List<TbPackingList> packingLists = tbPackingListRepository.findPackingListByVehicleId(Long.parseLong(id));
 		List<TbBrand> brandsList = variantService.findAllBrands();
@@ -102,19 +97,60 @@ public class VehicleService {
 		List<TbVariant> variantList = variantService.findAllVariants();
 		List<Colour> colourList = variantService.getColourDetailsByVariantId(vehicle.getTbVariant().getId().toString());
 		// set details to load in edit page
-		VehicleBeanForEdit vbe = new VehicleBeanForEdit();
-		vbe.setStatusList(status);
-		vbe.setGenderList(genders);
-		vbe.setVehicleTypeList(vehicleTypes);
-		vbe.setVehicle(vehicle);
-		vbe.setCustomerVehicleOwnedInfo(
-				CollectionUtils.isEmpty(vehicleOwnedInfoList) ? null : vehicleOwnedInfoList.get(0));
-		vbe.setEndorse(CollectionUtils.isEmpty(endorseList) ? null : endorseList.get(0));
-		vbe.setPackingList(CollectionUtils.isEmpty(packingLists) ? null : packingLists.get(0));
+		VehicleBeanForEdit vbe = setVehicleDetails(vehicle, endorseList, packingLists);
+		vbe.setStatusList(statusList);
+		vbe.setGenderList(genderList);
+		vbe.setVehicleTypeList(vehicleTypeList);
 		vbe.setBrandsList(brandsList);
 		vbe.setSeriesList(seriesList);
 		vbe.setVariantList(variantList);
 		vbe.setColourList(colourList);
+		return vbe;
+	}
+
+	private VehicleBeanForEdit setVehicleDetails(TbVehicle vehicle, List<TbEndorse> endorseList,
+			List<TbPackingList> packingLists) {
+		VehicleBeanForEdit vbe = new VehicleBeanForEdit();
+		vbe.setId(vehicle.getId().toString());
+		vbe.setBrandId(vehicle.getTbVariant().getBrandId().getId().toString());
+		vbe.setSeriesId(vehicle.getTbVariant().getSeriesId().getId().toString());
+		vbe.setModelId(vehicle.getTbVariant().getId().toString());
+		vbe.setColourId(vehicle.getTbColour().getId().toString());
+		vbe.setChassisNo(vehicle.getChassisNo());
+		vbe.setEngineNo(vehicle.getEngineNo());
+		vbe.setLotNo(vehicle.getLotNo());
+		vbe.setReceiptNo(vehicle.getReceiptNo());
+		vbe.setVehicleType(vehicle.getTbVehicleType().getId().toString());
+		vbe.setComOwnedVehicle(String.valueOf(vehicle.getIsCompanyown()));
+		vbe.setReadyForSale(String.valueOf(vehicle.getIsReadyforSale()));
+		if (!CollectionUtils.isEmpty(endorseList)) {
+			TbEndorse endorse = endorseList.get(0);
+			vbe.setRemovalDate(DateUtil.getDate(endorse.getRemovalDate(), "dd-MMM-yyyy"));
+			vbe.setEndExNo(endorse.getEndExno());
+			vbe.setEndTradingPartner1(endorse.getTradingPartner1());
+			vbe.setEndTradingPartner2(endorse.getTradingPartner2());
+			vbe.setEndTradingPartner3(endorse.getTradingPartner3());
+		}
+		if (!CollectionUtils.isEmpty(packingLists)) {
+			TbPackingList packingList = packingLists.get(0);
+			vbe.setPkgListNo(packingList.getPackingListNo());
+			vbe.setbLDate(DateUtil.getDate(packingList.getBlDate(), "dd-MMM-yyyy"));
+			vbe.setInvoiceNO(packingList.getInvoiceNo());
+			vbe.setCertificateOfOrigin(String.valueOf(packingList.getCertificateOfOrigin()));
+			vbe.setBatchNo(packingList.getBatchNo());
+		}
+		if (vehicle.getTbCustomer() != null) {
+			TbCustomer cus = vehicle.getTbCustomer();
+			vbe.setCustomerName(cus.getCustomerName());
+			vbe.setGender(cus.getTbGender().getId().toString());
+			vbe.setPhoneNo(cus.getPhoneNo());
+			vbe.setEmail(cus.getEmail());
+			vbe.setIc(cus.getIdentificationNo());
+			vbe.setAddress(cus.getAddress());
+			vbe.setCity(cus.getCity());
+			vbe.setState(cus.getState());
+			vbe.setPostcode(cus.getPhoneNo());
+		}
 		return vbe;
 	}
 

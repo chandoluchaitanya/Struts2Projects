@@ -20,7 +20,8 @@ public interface TbVehicleRepository extends JpaRepository<TbVehicle, Long> {
 
 	@Query(" from TbVehicle v left outer join fetch  v.tbVariant variant "
 			+ " left outer join fetch  v.tbColour colour left outer join fetch  v.tbConfigStatus status "
-			+ " left outer join fetch  v.tbVehicleType vt " + " where v.id =:vehicleId ")
+			+ " left outer join fetch  v.tbVehicleType vt " + " left outer join fetch  v.tbCustomer cus "
+			+ " where v.id =:vehicleId ")
 	public TbVehicle findByVehicleIdWithInitialization(@Param("vehicleId") Long vehicleId);
 
 }
