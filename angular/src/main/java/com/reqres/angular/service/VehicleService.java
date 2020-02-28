@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import com.reqres.angular.bean.Colour;
@@ -13,6 +14,7 @@ import com.reqres.angular.bean.VehicleBeanForEdit;
 import com.reqres.angular.bean.VehicleBeanForUpdate;
 import com.reqres.angular.dto.VehicleFilterDTO;
 import com.reqres.angular.model.TbBrand;
+import com.reqres.angular.model.TbColour;
 import com.reqres.angular.model.TbConfigStatus;
 import com.reqres.angular.model.TbCustomer;
 import com.reqres.angular.model.TbEndorse;
@@ -23,10 +25,13 @@ import com.reqres.angular.model.TbSeries;
 import com.reqres.angular.model.TbVariant;
 import com.reqres.angular.model.TbVehicle;
 import com.reqres.angular.model.TbVehicleType;
+import com.reqres.angular.repo.TbColourRepository;
+import com.reqres.angular.repo.TbCustomerRepository;
 import com.reqres.angular.repo.TbEndorseRepository;
 import com.reqres.angular.repo.TbGenderRepository;
 import com.reqres.angular.repo.TbPackingListRepository;
 import com.reqres.angular.repo.TbPaintTypeRepository;
+import com.reqres.angular.repo.TbVariantRepository;
 import com.reqres.angular.repo.TbVehicleRepository;
 import com.reqres.angular.repo.TbVehicleTypeRepository;
 import com.reqres.angular.repo.VehicleDao;
@@ -43,12 +48,17 @@ public class VehicleService {
 	private TbEndorseRepository tbEndorseRepository;
 	private TbPackingListRepository tbPackingListRepository;
 	private TbGenderRepository tbGenderRepository;
+	private TbCustomerRepository tbCustomerRepository;
+	private TbVariantRepository tbVariantRepository;
+	private TbColourRepository tbColourRepository;
 
 	@Autowired
 	public VehicleService(VariantService variantService, VehicleDao vehicleDao,
 			TbPaintTypeRepository tbPaintTypeRepository, TbVehicleTypeRepository tbVehicleTypeRepository,
 			TbVehicleRepository tbVehicleRepository, TbEndorseRepository tbEndorseRepository,
-			TbPackingListRepository tbPackingListRepository, TbGenderRepository tbGenderRepository) {
+			TbPackingListRepository tbPackingListRepository, TbGenderRepository tbGenderRepository,
+			TbCustomerRepository tbCustomerRepository, TbVariantRepository tbVariantRepository,
+			TbColourRepository tbColourRepository) {
 		this.variantService = variantService;
 		this.vehicleDao = vehicleDao;
 		this.tbPaintTypeRepository = tbPaintTypeRepository;
@@ -57,6 +67,9 @@ public class VehicleService {
 		this.tbEndorseRepository = tbEndorseRepository;
 		this.tbPackingListRepository = tbPackingListRepository;
 		this.tbGenderRepository = tbGenderRepository;
+		this.tbCustomerRepository = tbCustomerRepository;
+		this.tbVariantRepository = tbVariantRepository;
+		this.tbColourRepository = tbColourRepository;
 	}
 
 	public PaginationUtilDTO getVehicleDetails(SearchVehicleBean searchVehicleBean) {
@@ -154,8 +167,104 @@ public class VehicleService {
 		return vbe;
 	}
 
+	@Transactional
 	public String updateVehicleDetails(VehicleBeanForUpdate bean) {
-		// TODO Auto-generated method stub
-		return null;
+		TbVehicle vehicle = tbVehicleRepository.findByVehicleId(Long.parseLong(bean.getId()));
+		vehicle = setVehicleDetails(bean, vehicle);
+		List<TbEndorse> endorseList = tbEndorseRepository.findEndorseDetailsByVehicleId(Long.parseLong(bean.getId()));
+		TbEndorse endorse = setEndorseDetails(endorseList, bean);
+		List<TbPackingList> packingListList = tbPackingListRepository
+				.findPackingListByVehicleId(Long.parseLong(bean.getId()));
+		TbPackingList packingList = setPackingList(packingListList, bean);
+		TbCustomer customer = setCustomerDetails(vehicle, bean);
+		// save all objects to transaction
+		tbCustomerRepository.save(customer);
+		tbPackingListRepository.save(packingList);
+		tbEndorseRepository.save(endorse);
+		tbVehicleRepository.save(vehicle);
+		return "1";
+	}
+
+	private TbCustomer setCustomerDetails(TbVehicle vehicle, VehicleBeanForUpdate bean) {
+		TbCustomer customer = null;
+		if (vehicle.getTbCustomer() != null) {
+			customer = vehicle.getTbCustomer();
+		} else {
+			customer = new TbCustomer();
+		}
+		TbGender gender = new TbGender();
+		gender.setId(Long.parseLong(bean.getCustomerInfoGroup().getGender()));
+		customer.setTbGender(gender);
+		customer.setCustomerName(bean.getCustomerInfoGroup().getCustomerName());
+		customer.setPhoneNo(bean.getCustomerInfoGroup().getPhoneNo());
+		customer.setEmail(bean.getCustomerInfoGroup().getEmail());
+		customer.setIdentificationNo(bean.getCustomerInfoGroup().getIc());
+		customer.setAddress(bean.getCustomerInfoGroup().getAddress());
+		customer.setCity(bean.getCustomerInfoGroup().getCity());
+		customer.setState(bean.getCustomerInfoGroup().getState());
+		customer.setPostCode(bean.getCustomerInfoGroup().getPostcode());
+		return customer;
+	}
+
+	private TbPackingList setPackingList(List<TbPackingList> packingListList, VehicleBeanForUpdate bean) {
+		TbPackingList packingList = null;
+		if (!CollectionUtils.isEmpty(packingListList)) {
+			packingList = packingListList.get(0);
+		} else {
+			packingList = new TbPackingList();
+		}
+		packingList.setPackingListNo(bean.getShippingInfoGroup().getPkgListNo());
+		packingList.setBatchNo(bean.getShippingInfoGroup().getBatchNo());
+		packingList.setBlDate(DateUtil.getDate(bean.getShippingInfoGroup().getbLDate(), "dd-MMM-yyyy"));
+		packingList.setInvoiceNo(bean.getShippingInfoGroup().getInvoiceNO());
+		if ("true".equalsIgnoreCase(bean.getShippingInfoGroup().getCertificateOfOrigin())) {
+			packingList.setCertificateOfOrigin((byte) 1);
+		} else {
+			packingList.setCertificateOfOrigin((byte) 0);
+		}
+		return packingList;
+	}
+
+	private TbEndorse setEndorseDetails(List<TbEndorse> endorseList, VehicleBeanForUpdate bean) {
+		TbEndorse endorse = null;
+		if (!CollectionUtils.isEmpty(endorseList)) {
+			endorse = endorseList.get(0);
+		} else {
+			endorse = new TbEndorse();
+		}
+		endorse.setVehicleId(Long.parseLong(bean.getId()));
+		endorse.setChassisNo(bean.getChassisNo());
+		endorse.setEngineNo(bean.getEngineNo());
+		endorse.setRemovalDate(DateUtil.getDate(bean.getEndorsementGroup().getRemovalDate(), "dd-MMM-yyyy"));
+		endorse.setEndExno(bean.getEndorsementGroup().getEndExNo());
+		endorse.setTradingPartner1(bean.getEndorsementGroup().getEndTradingPartner1());
+		endorse.setTradingPartner2(bean.getEndorsementGroup().getEndTradingPartner2());
+		endorse.setTradingPartner3(bean.getEndorsementGroup().getEndTradingPartner3());
+		return endorse;
+	}
+
+	private TbVehicle setVehicleDetails(VehicleBeanForUpdate bean, TbVehicle vehicle) {
+		TbVariant variant = tbVariantRepository.findOneById(Long.parseLong(bean.getModelId()));
+		vehicle.setTbVariant(variant);
+		TbColour colour = tbColourRepository.findOneById(Long.parseLong(bean.getColourId()));
+		vehicle.setTbColour(colour);
+		vehicle.setChassisNo(bean.getChassisNo());
+		vehicle.setEngineNo(bean.getEngineNo());
+		vehicle.setLotNo(bean.getVehicleDetailsGroup().getLotNo());
+		vehicle.setReceiptNo(bean.getVehicleDetailsGroup().getReceiptNo());
+		TbVehicleType vehicleType = new TbVehicleType();
+		vehicleType.setId(Long.parseLong(bean.getVehicleTypeGroup().getVehicleType()));
+		vehicle.setTbVehicleType(vehicleType);
+		if ("true".equalsIgnoreCase(bean.getVehicleTypeGroup().getComOwnedVehicle())) {
+			vehicle.setIsCompanyown((byte) 1);
+		} else {
+			vehicle.setIsCompanyown((byte) 0);
+		}
+		if ("true".equalsIgnoreCase(bean.getVehicleTypeGroup().getReadyForSale())) {
+			vehicle.setIsReadyforSale((byte) 1);
+		} else {
+			vehicle.setIsReadyforSale((byte) 0);
+		}
+		return vehicle;
 	}
 }

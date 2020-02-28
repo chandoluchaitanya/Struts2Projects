@@ -24,4 +24,7 @@ public interface TbVehicleRepository extends JpaRepository<TbVehicle, Long> {
 			+ " where v.id =:vehicleId ")
 	public TbVehicle findByVehicleIdWithInitialization(@Param("vehicleId") Long vehicleId);
 
+	@Query(" from TbVehicle v left outer join fetch  v.tbCustomer cus  where v.id =:vehicleId ")
+	public TbVehicle findByVehicleId(@Param("vehicleId") Long vehicleId);
+
 }
